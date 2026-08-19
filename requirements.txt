@@ -1,6 +1,5 @@
-streamlit
 ultralytics
-pillow
+streamlit
 pandas
-libgl1
-libglib2.0-0
+pillow
+opencv-python-headless
