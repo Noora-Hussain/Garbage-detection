@@ -12,11 +12,15 @@ st.set_page_config(
     layout="wide"
 )
 
-Garbage_Classes = ['Paper', 'Plastic']
+Garbage_Classes = ['Glass', 'Metal', 'Paper', 'Plastic', 'Waste']
 
-DESCRIPTIONS = {
-    "Plastic": "Recyclable plastic items like bottles and containers. Clean before recycling.",
-    "Paper": "Dry paper waste. Can be recycled in paper bins."}
+GARBAGE_DESCRIPTIONS = {
+    "Glass": "Glass: Please place it in the glass container and ensure it is clean and unbroken.",
+    "Metal": "Metal: Aluminum cans and packaging are recyclable, please empty them.",
+    "Paper": "Paper: Clean and dry paper, please place it in the designated paper bin.",
+    "Plastic": "Plastic: Plastic bottles and containers, please rinse them before recycling.",
+    "Waste": "General Waste: These are non-recyclable wastes, please dispose of them in the general waste bin."
+}
 
 APP_FOLDER = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATH = os.path.join(APP_FOLDER, "best.pt")
@@ -37,11 +41,7 @@ def get_detections(result):
         confidence = float(box.conf[0])
         x1, y1, x2, y2 = box.xyxy[0].tolist()
 
-        detections.append({
-            "Garbage": result.names[class_id],
-            "Confidence": f"{confidence * 100:.1f}%",
-            "Box": f"({x1:.0f}, {y1:.0f}) to ({x2:.0f}, {y2:.0f})"
-        })
+        detections.append({"Garbage": result.names[class_id],"Confidence": f"{confidence * 100:.1f}%","Box": f"({x1:.0f}, {y1:.0f}) to ({x2:.0f}, {y2:.0f})"})
 
     return detections
 
@@ -60,24 +60,20 @@ st.write(
 
 with st.sidebar:
     st.header("Detection Settings")
-    confidence = st.slider(
-        "Minimum confidence",
-        min_value=0.10,
-        max_value=0.90,
-        value=0.40,
-        step=0.05
-    )
+    confidence = st.slider("Minimum confidence",min_value=0.10, max_value=0.90)
+    
     source = st.radio("Choose image source", ["Upload Image", "Use Camera"])
 
     st.header("Garbage Classes")
-    for garbage in Garbage_Classes:
-        st.write(f"• {garbage}")
+    for Garbage in Garbage_Classes:
+        st.write(f"• {Garbage}")
 
 if source == "Upload Image":
     image_file = st.file_uploader(
         "Upload an unseen waste image",  
         type=["jpg", "jpeg", "png"]
     )
+    
 else:
     image_file = st.camera_input("Take a photo of the waste")  
 
@@ -125,7 +121,7 @@ else:
             
             detected_names = list(dict.fromkeys(detection_data["Garbage"].tolist()))
             for item in detected_names:
-                description = DESCRIPTIONS.get(item.title()) 
+                description = GARBAGE_DESCRIPTIONS.get(item.title()) 
                 if description:
                     st.write(f"**{item}:** {description}")
         else:
@@ -134,6 +130,12 @@ else:
                 "or using a clearer, closer image."
             )
 
+        st.download_button(
+            "Download Annotated Image",
+            data=image_to_bytes(annotated_image),
+            file_name="garbage_detection_result.jpg",  
+            mime="image/jpeg"
+        )
 
     except Exception as error:
         st.error(f"The image could not be processed: {error}")
