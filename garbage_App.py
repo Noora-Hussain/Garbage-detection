@@ -12,169 +12,59 @@ st.set_page_config(
     layout="wide"
 )
 
-"""
-Smart Waste — custom look & feel for the Streamlit app.
+# --- إضافة تنسيقات CSS مخصصة لتحسين الشكل العصري ---
+st.markdown("""
+    <style>
+    /* تغيير لون الخلفية العامة وتنسيق الخطوط */
+    .stApp {
+        background-color: #f8f9fa;
+    }
+    
+    /* تنسيق العناوين الرئيسية */
+    h1, h2, h3 {
+        color: #1b4332 !important;
+        font-family: 'Inter', sans-serif;
+    }
 
-This file only changes DESIGN (colors, spacing, cards, fonts).
-It does not touch any detection logic.
+    /* تنسيق الـ Metrics (العدادات) */
+    [data-testid="stMetric"] {
+        background-color: #ffffff;
+        padding: 15px;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e9ecef;
+    }
+    
+    /* تنسيق الـ Sidebar */
+    [data-testid="stSidebar"] {
+        background-color: #ffffff;
+        border-right: 1px solid #e9ecef;
+    }
 
-How to use it in garbage_App.py:
+    /* تنسيق الأزرار */
+    .stButton>button, .stDownloadButton>button {
+        background-color: #2d6a4f;
+        color: white;
+        border-radius: 8px;
+        padding: 0.5rem 1rem;
+        border: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    .stButton>button:hover, .stDownloadButton>button:hover {
+        background-color: #40916c;
+        color: white;
+    }
 
-    import streamlit as st
-    from app_style import inject_custom_css
-
-    st.set_page_config(
-        page_title="Smart Waste Routing",
-        page_icon="♻️",
-        layout="wide"
-    )
-    inject_custom_css()   # <-- add this one line right after set_page_config
-
-That's it — everything below is CSS injected once at the top of the app.
-"""
-
-import streamlit as st
-
-# Same palette used in the Lightning Talk 2 slides
-PRIMARY = "#1B4332"    # deep forest green
-SECONDARY = "#52796F"  # slate teal-green
-ACCENT = "#F2B134"     # amber
-LIGHT = "#F4F6F3"      # near-white card background
-INK = "#1B1B1B"
-MUTED = "#5B6B63"
-
-# Per-class chip colors (matches the slide legend)
-CLASS_COLORS = {
-    "Glass": "#52796F",
-    "Metal": "#8D99AE",
-    "Paper": "#F2B134",
-    "Plastic": "#E76F51",
-    "Waste": "#6B4226",
-}
-
-
-def inject_custom_css():
-    st.markdown(
-        f"""
-        <style>
-        /* ---------- page background & base font ---------- */
-        .stApp {{
-            background-color: {LIGHT};
-        }}
-        html, body, [class*="css"] {{
-            font-family: 'Calibri', 'Segoe UI', sans-serif;
-            color: {INK};
-        }}
-
-        /* ---------- main title ---------- */
-        h1 {{
-            color: {PRIMARY} !important;
-            font-weight: 800 !important;
-            letter-spacing: -0.5px;
-        }}
-        h2, h3 {{
-            color: {PRIMARY} !important;
-        }}
-
-        /* ---------- sidebar ---------- */
-        section[data-testid="stSidebar"] {{
-            background-color: {PRIMARY};
-        }}
-        section[data-testid="stSidebar"] * {{
-            color: #F4F6F3 !important;
-        }}
-        section[data-testid="stSidebar"] h1,
-        section[data-testid="stSidebar"] h2,
-        section[data-testid="stSidebar"] h3 {{
-            color: {ACCENT} !important;
-        }}
-
-        /* ---------- buttons ---------- */
-        .stButton > button, .stDownloadButton > button {{
-            background-color: {PRIMARY};
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 0.5rem 1.2rem;
-            font-weight: 600;
-            transition: 0.2s ease;
-        }}
-        .stButton > button:hover, .stDownloadButton > button:hover {{
-            background-color: {SECONDARY};
-            color: white;
-        }}
-
-        /* ---------- slider ---------- */
-        .stSlider [data-baseweb="slider"] > div > div {{
-            background: {ACCENT} !important;
-        }}
-
-        /* ---------- radio buttons ---------- */
-        div[role="radiogroup"] label {{
-            font-weight: 500;
-        }}
-
-        /* ---------- file uploader / camera box ---------- */
-        [data-testid="stFileUploaderDropzone"] {{
-            background-color: white;
-            border: 2px dashed {SECONDARY};
-            border-radius: 12px;
-        }}
-
-        /* ---------- metric cards (garbage counts) ---------- */
-        [data-testid="stMetric"] {{
-            background-color: white;
-            border-radius: 12px;
-            padding: 1rem;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-        }}
-        [data-testid="stMetricValue"] {{
-            color: {PRIMARY} !important;
-            font-weight: 800 !important;
-        }}
-        [data-testid="stMetricLabel"] {{
-            color: {MUTED} !important;
-        }}
-
-        /* ---------- dataframe / table ---------- */
-        [data-testid="stDataFrame"] {{
-            border-radius: 10px;
-            overflow: hidden;
-        }}
-
-        /* ---------- info / warning / error boxes ---------- */
-        div[data-testid="stAlert"] {{
-            border-radius: 10px;
-        }}
-
-        /* ---------- expander ("About this project") ---------- */
-        details {{
-            background-color: white;
-            border-radius: 10px;
-            border: 1px solid #E3E8E5;
-        }}
-
-        /* ---------- subtle divider under the title ---------- */
-        .block-container > div:first-child {{
-            padding-top: 1rem;
-        }}
-        </style>
-        """,
-        unsafe_allow_html=True,
-    )
-
-
-def class_badge_html(label: str) -> str:
-    """
-    Returns a small colored HTML pill for a waste class,
-    e.g. st.markdown(class_badge_html("Plastic"), unsafe_allow_html=True)
-    """
-    color = CLASS_COLORS.get(label, SECONDARY)
-    return (
-        f'<span style="background-color:{color}; color:white; '
-        f'padding:3px 10px; border-radius:999px; font-size:13px; '
-        f'font-weight:600;">{label}</span>'
-    )
+    /* تنسيق الـ Expander */
+    .streamlit-expanderHeader {
+        background-color: #ffffff;
+        border-radius: 8px;
+        border: 1px solid #e9ecef;
+    }
+    </style>
+""", unsafe_allow_html=True)
+# ----------------------------------------------------
     
 Garbage_Classes = ['Glass', 'Metal', 'Paper', 'Plastic', 'Waste']
 
@@ -215,7 +105,7 @@ def image_to_bytes(image):
     return buffer.getvalue()
 
 
-st.title("♻️ Smart Waste Routing & Monitoring System ")
+st.title("♻️ Smart Waste Routing & Monitoring System")
 st.write(
     "Upload a waste photo or use your camera. The fine-tuned YOLO model will "
     "locate and identify the items it recognizes."
@@ -224,7 +114,7 @@ st.write(
 
 with st.sidebar:
     st.header("Detection Settings")
-    confidence = st.slider("Minimum confidence",min_value=0.10, max_value=0.90)
+    confidence = st.slider("Minimum confidence", min_value=0.10, max_value=0.90)
     
     source = st.radio("Choose image source", ["Upload Image", "Use Camera"])
 
@@ -237,7 +127,6 @@ if source == "Upload Image":
         "Upload an unseen waste image",  
         type=["jpg", "jpeg", "png"]
     )
-    
 else:
     image_file = st.camera_input("Take a photo of the waste")  
 
@@ -269,8 +158,8 @@ else:
             st.subheader("Detection Result")
             st.image(annotated_image, use_container_width=True)
 
+        st.markdown("---")
         st.subheader("Detected Garbage") 
-
 
         if detections:
             detection_data = pd.DataFrame(detections)
@@ -280,20 +169,21 @@ else:
             for index, (item, count) in enumerate(garbage_counts.items()):
                 count_columns[index % len(count_columns)].metric(item, int(count))
 
+            st.write("") # مسافة بسيطة
             st.dataframe(detection_data, use_container_width=True, hide_index=True)
-
             
             detected_names = list(dict.fromkeys(detection_data["Garbage"].tolist()))
             for item in detected_names:
                 description = GARBAGE_DESCRIPTIONS.get(item.title()) 
                 if description:
-                    st.write(f"**{item}:** {description}")
+                    st.info(f"**{item}:** {description}") # استبدال st.write ب st.info لإعطاء مظهر صندوقي جميل للوصف
         else:
             st.warning(
                 "No garbage was detected. Try lowering the confidence " 
                 "or using a clearer, closer image."
             )
 
+        st.write("")
         st.download_button(
             "Download Annotated Image",
             data=image_to_bytes(annotated_image),
@@ -304,8 +194,9 @@ else:
     except Exception as error:
         st.error(f"The image could not be processed: {error}")
 
+st.write("")
 with st.expander("About this project"):
     st.write(
-        "This prototype was created for a garbage detection project"
-        "It uses a fine-tuned YOLO model to detect waste items and place a bounding box around each detected object"
+        "This prototype was created for a garbage detection project. "
+        "It uses a fine-tuned YOLO model to detect waste items and place a bounding box around each detected object."
     )
