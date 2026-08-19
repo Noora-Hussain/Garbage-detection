@@ -13,87 +13,85 @@ st.set_page_config(
 )
 st.markdown("""
     <style>
-    /* خلفية التطبيق العامة */
+    /* خلفية التطبيق بيضاء ونظيفة */
     .stApp {
-        background-color: #0f172a;
-        color: #f8fafc;
+        background-color: #f8fafc;
+        color: #1e293b;
     }
     
-    /* تنسيق العناوين الرئيسية والفرعية */
+    /* تنسيق العناوين الرئيسية بلون أخضر هادئ وجميل */
     h1 {
-        color: #38bdf8;
+        color: #0d9488;
         font-family: 'Inter', sans-serif;
-        font-weight: 800;
-        letter-spacing: -0.5px;
+        font-weight: 700;
     }
     
     h2, h3 {
-        color: #34d399;
+        color: #0f766e;
         font-family: 'Inter', sans-serif;
     }
     
-    /* الشريط الجانبي */
+    /* الشريط الجانبي بلون فاتح ومرتب */
     [data-testid="stSidebar"] {
-        background-color: #1e293b;
-        border-right: 1px solid #334155;
+        background-color: #f1f5f9;
+        border-right: 1px solid #e2e8f0;
     }
     
-    /* المربعات الإحصائية (Metrics) */
+    /* المربعات الإحصائية (Metrics) بخلفية بيضاء وظل خفيف */
     div[data-testid="stMetric"] {
-        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-        padding: 20px;
-        border-radius: 14px;
-        border: 1px solid #334155;
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+        background-color: #ffffff;
+        padding: 18px;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
     }
     div[data-testid="stMetric"] label {
-        color: #94a3b8 !important;
+        color: #64748b !important;
     }
     div[data-testid="stMetric"] div[data-testid="stMetricValue"] {
-        color: #38bdf8 !important;
+        color: #0d9488 !important;
     }
     
-    /* الأزرار العادية */
+    /* الأزرار بلون أخضر حيوي وجذاب */
     .stButton>button {
-        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        background-color: #0d9488;
         color: white;
         border-radius: 10px;
         border: none;
-        padding: 12px 24px;
+        padding: 10px 20px;
         font-weight: 600;
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-        transition: all 0.3s ease;
+        box-shadow: 0 2px 4px rgba(13, 148, 136, 0.2);
+        transition: all 0.2s ease;
     }
     
     .stButton>button:hover {
-        background: linear-gradient(135deg, #059669 0%, #047857 100%);
-        box-shadow: 0 6px 16px rgba(16, 185, 129, 0.5);
-        transform: translateY(-2px);
+        background-color: #0f766e;
+        color: white;
     }
     
-    /* زر التحميل */
+    /* زر التحميل بلون مميز */
     [data-testid="stDownloadButton"]>button {
-        background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+        background-color: #0284c7;
     }
     [data-testid="stDownloadButton"]>button:hover {
-        background: linear-gradient(135deg, #0369a1 0%, #075985 100%);
+        background-color: #0369a1;
     }
 
-    /* صناديق المعلومات والإرشادات */
+    /* صناديق المعلومات والإرشادات بخلفية فاتحة وناعمة */
     div.stInfo {
-        background-color: #1e293b;
-        border: 1px solid #334155;
-        border-left: 5px solid #38bdf8;
+        background-color: #f0fdf4;
+        border: 1px solid #bbf7d0;
+        border-left: 5px solid #22c55e;
         border-radius: 8px;
-        color: #f8fafc;
+        color: #166534;
     }
     
     div.stSuccess {
-        background-color: #1e293b;
-        border: 1px solid #334155;
-        border-left: 5px solid #10b981;
+        background-color: #f0fdf4;
+        border: 1px solid #bbf7d0;
+        border-left: 5px solid #16a34a;
         border-radius: 8px;
-        color: #f8fafc;
+        color: #166534;
     }
     </style>
 """, unsafe_allow_html=True)
