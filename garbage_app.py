@@ -70,8 +70,8 @@ with st.sidebar:
     source = st.radio("Choose image source", ["Upload Image", "Use Camera"])
 
     st.header("Garbage Classes")
-    for food in Garbage_Classes:
-        st.write(f"• {item}")
+    for garbage in Garbage_Classes:
+        st.write(f"• {garbage}")
 
 if source == "Upload Image":
     image_file = st.file_uploader(
