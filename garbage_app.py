@@ -12,47 +12,6 @@ st.set_page_config(
     layout="wide"
 )
 
-st.markdown(
-    <style>
-    .stApp {
-        background-color: #f8f9fa;
-    }
-    
-    h1 {
-        color: #2b7a78;
-        font-family: 'Helvetica Neue', sans-serif;
-    }
-    
-    h2, h3 {
-        color: #3aafa9;
-    }
-    
-    css-1d391k8 {
-        background-color: #e2f8f8;
-    }
-    
-    div[data-testid="stMetric"] {
-        background-color: #ffffff;
-        padding: 15px;
-        border-radius: 10px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-        border-left: 5px solid #3aafa9;
-    }
-    
-    .stButton>button {
-        background-color: #3aafa9;
-        color: white;
-        border-radius: 8px;
-        border: none;
-        padding: 10px 20px;
-        font-weight: bold;
-    }
-    
-    .stButton>button:hover {
-        background-color: #2b7a78;
-        color: white;
-    }
-, unsafe_allow_html=True)
 
 Garbage_Classes = ['Glass', 'Metal', 'Paper', 'Plastic', 'Waste']
 
