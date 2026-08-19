@@ -12,7 +12,170 @@ st.set_page_config(
     layout="wide"
 )
 
+"""
+Smart Waste — custom look & feel for the Streamlit app.
 
+This file only changes DESIGN (colors, spacing, cards, fonts).
+It does not touch any detection logic.
+
+How to use it in garbage_App.py:
+
+    import streamlit as st
+    from app_style import inject_custom_css
+
+    st.set_page_config(
+        page_title="Smart Waste Routing",
+        page_icon="♻️",
+        layout="wide"
+    )
+    inject_custom_css()   # <-- add this one line right after set_page_config
+
+That's it — everything below is CSS injected once at the top of the app.
+"""
+
+import streamlit as st
+
+# Same palette used in the Lightning Talk 2 slides
+PRIMARY = "#1B4332"    # deep forest green
+SECONDARY = "#52796F"  # slate teal-green
+ACCENT = "#F2B134"     # amber
+LIGHT = "#F4F6F3"      # near-white card background
+INK = "#1B1B1B"
+MUTED = "#5B6B63"
+
+# Per-class chip colors (matches the slide legend)
+CLASS_COLORS = {
+    "Glass": "#52796F",
+    "Metal": "#8D99AE",
+    "Paper": "#F2B134",
+    "Plastic": "#E76F51",
+    "Waste": "#6B4226",
+}
+
+
+def inject_custom_css():
+    st.markdown(
+        f"""
+        <style>
+        /* ---------- page background & base font ---------- */
+        .stApp {{
+            background-color: {LIGHT};
+        }}
+        html, body, [class*="css"] {{
+            font-family: 'Calibri', 'Segoe UI', sans-serif;
+            color: {INK};
+        }}
+
+        /* ---------- main title ---------- */
+        h1 {{
+            color: {PRIMARY} !important;
+            font-weight: 800 !important;
+            letter-spacing: -0.5px;
+        }}
+        h2, h3 {{
+            color: {PRIMARY} !important;
+        }}
+
+        /* ---------- sidebar ---------- */
+        section[data-testid="stSidebar"] {{
+            background-color: {PRIMARY};
+        }}
+        section[data-testid="stSidebar"] * {{
+            color: #F4F6F3 !important;
+        }}
+        section[data-testid="stSidebar"] h1,
+        section[data-testid="stSidebar"] h2,
+        section[data-testid="stSidebar"] h3 {{
+            color: {ACCENT} !important;
+        }}
+
+        /* ---------- buttons ---------- */
+        .stButton > button, .stDownloadButton > button {{
+            background-color: {PRIMARY};
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0.5rem 1.2rem;
+            font-weight: 600;
+            transition: 0.2s ease;
+        }}
+        .stButton > button:hover, .stDownloadButton > button:hover {{
+            background-color: {SECONDARY};
+            color: white;
+        }}
+
+        /* ---------- slider ---------- */
+        .stSlider [data-baseweb="slider"] > div > div {{
+            background: {ACCENT} !important;
+        }}
+
+        /* ---------- radio buttons ---------- */
+        div[role="radiogroup"] label {{
+            font-weight: 500;
+        }}
+
+        /* ---------- file uploader / camera box ---------- */
+        [data-testid="stFileUploaderDropzone"] {{
+            background-color: white;
+            border: 2px dashed {SECONDARY};
+            border-radius: 12px;
+        }}
+
+        /* ---------- metric cards (garbage counts) ---------- */
+        [data-testid="stMetric"] {{
+            background-color: white;
+            border-radius: 12px;
+            padding: 1rem;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+        }}
+        [data-testid="stMetricValue"] {{
+            color: {PRIMARY} !important;
+            font-weight: 800 !important;
+        }}
+        [data-testid="stMetricLabel"] {{
+            color: {MUTED} !important;
+        }}
+
+        /* ---------- dataframe / table ---------- */
+        [data-testid="stDataFrame"] {{
+            border-radius: 10px;
+            overflow: hidden;
+        }}
+
+        /* ---------- info / warning / error boxes ---------- */
+        div[data-testid="stAlert"] {{
+            border-radius: 10px;
+        }}
+
+        /* ---------- expander ("About this project") ---------- */
+        details {{
+            background-color: white;
+            border-radius: 10px;
+            border: 1px solid #E3E8E5;
+        }}
+
+        /* ---------- subtle divider under the title ---------- */
+        .block-container > div:first-child {{
+            padding-top: 1rem;
+        }}
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def class_badge_html(label: str) -> str:
+    """
+    Returns a small colored HTML pill for a waste class,
+    e.g. st.markdown(class_badge_html("Plastic"), unsafe_allow_html=True)
+    """
+    color = CLASS_COLORS.get(label, SECONDARY)
+    return (
+        f'<span style="background-color:{color}; color:white; '
+        f'padding:3px 10px; border-radius:999px; font-size:13px; '
+        f'font-weight:600;">{label}</span>'
+    )
+    
 Garbage_Classes = ['Glass', 'Metal', 'Paper', 'Plastic', 'Waste']
 
 GARBAGE_DESCRIPTIONS = {
