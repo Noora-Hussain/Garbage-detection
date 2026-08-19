@@ -125,7 +125,7 @@ else:
             
             detected_names = list(dict.fromkeys(detection_data["Garbage"].tolist()))
             for item in detected_names:
-                description = GARBAGE_DESCRIPTIONS.get(item.title()) 
+                description = DESCRIPTIONS.get(item.title()) 
                 if description:
                     st.write(f"**{item}:** {description}")
         else:
