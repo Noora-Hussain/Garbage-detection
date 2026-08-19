@@ -12,59 +12,89 @@ st.set_page_config(
     layout="wide"
 )
 
-# --- إضافة تنسيقات CSS مخصصة لتحسين الشكل العصري ---
+# --- تنسيقات CSS احترافية وعصرية جداً ---
 st.markdown("""
     <style>
-    /* تغيير لون الخلفية العامة وتنسيق الخطوط */
+    /* خلفية عامة ونظيفة */
     .stApp {
-        background-color: #f8f9fa;
+        background: linear-gradient(135deg, #f4f9f4 0%, #eef5f0 100%);
+        font-family: 'Inter', sans-serif;
     }
     
     /* تنسيق العناوين الرئيسية */
     h1, h2, h3 {
         color: #1b4332 !important;
-        font-family: 'Inter', sans-serif;
-    }
-
-    /* تنسيق الـ Metrics (العدادات) */
-    [data-testid="stMetric"] {
-        background-color: #ffffff;
-        padding: 15px;
-        border-radius: 12px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-        border: 1px solid #e9ecef;
+        font-weight: 700 !important;
     }
     
-    /* تنسيق الـ Sidebar */
-    [data-testid="stSidebar"] {
-        background-color: #ffffff;
-        border-right: 1px solid #e9ecef;
+    h1 {
+        border-bottom: 2px solid #d8f3dc;
+        padding-bottom: 10px;
     }
 
-    /* تنسيق الأزرار */
+    /* تصميم الـ Sidebar بلون متناسق */
+    [data-testid="stSidebar"] {
+        background-color: #ffffff;
+        border-right: 1px solid #d8f3dc;
+        box-shadow: 2px 0 10px rgba(0,0,0,0.02);
+    }
+
+    /* تصميم بطاقات الـ Metrics (العدادات) بشكل فخم */
+    [data-testid="stMetric"] {
+        background: #ffffff;
+        padding: 18px;
+        border-radius: 16px;
+        box-shadow: 0 6px 15px rgba(27, 67, 50, 0.05);
+        border: 1px solid #d8f3dc;
+        transition: transform 0.3s ease;
+    }
+    [data-testid="stMetric"]:hover {
+        transform: translateY(-3px);
+    }
+
+    /* الأزرار العصرية وأزرار التحميل */
     .stButton>button, .stDownloadButton>button {
-        background-color: #2d6a4f;
+        background: linear-gradient(135deg, #2d6a4f 0%, #1b4332 100%);
         color: white;
-        border-radius: 8px;
-        padding: 0.5rem 1rem;
+        border-radius: 12px;
+        padding: 0.6rem 1.2rem;
         border: none;
         font-weight: 600;
+        box-shadow: 0 4px 10px rgba(45, 106, 79, 0.2);
         transition: all 0.3s ease;
     }
     .stButton>button:hover, .stDownloadButton>button:hover {
-        background-color: #40916c;
+        background: linear-gradient(135deg, #40916c 0%, #2d6a4f 100%);
+        box-shadow: 0 6px 15px rgba(45, 106, 79, 0.3);
         color: white;
+    }
+
+    /* إطارات الصور والعرض */
+    div.stImage > img {
+        border-radius: 16px;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+        border: 2px solid #ffffff;
     }
 
     /* تنسيق الـ Expander */
     .streamlit-expanderHeader {
         background-color: #ffffff;
-        border-radius: 8px;
-        border: 1px solid #e9ecef;
+        border-radius: 12px;
+        border: 1px solid #d8f3dc;
+        font-weight: 600;
+        color: #1b4332;
+    }
+    
+    /* صناديق التنبيهات والوصف */
+    .stInfo {
+        background-color: #e8f5e9;
+        border: 1px solid #c8e6c9;
+        border-radius: 12px;
+        color: #1b4332;
     }
     </style>
 """, unsafe_allow_html=True)
-# ----------------------------------------------------
+# ---------------------------------------------
     
 Garbage_Classes = ['Glass', 'Metal', 'Paper', 'Plastic', 'Waste']
 
@@ -113,14 +143,15 @@ st.write(
 
 
 with st.sidebar:
-    st.header("Detection Settings")
+    st.header("⚙️ Settings")
     confidence = st.slider("Minimum confidence", min_value=0.10, max_value=0.90)
     
     source = st.radio("Choose image source", ["Upload Image", "Use Camera"])
 
-    st.header("Garbage Classes")
+    st.markdown("---")
+    st.header("🗑️ Garbage Classes")
     for Garbage in Garbage_Classes:
-        st.write(f"• {Garbage}")
+        st.write(f"• **{Garbage}**")
 
 if source == "Upload Image":
     image_file = st.file_uploader(
@@ -131,7 +162,7 @@ else:
     image_file = st.camera_input("Take a photo of the waste")  
 
 if image_file is None:
-    st.info("Upload an image or take a camera photo to begin detection.")
+    st.info("💡 Upload an image or take a camera photo to begin detection.")
 elif not os.path.exists(MODEL_PATH):
     st.error(
         "Model file not found. Place your trained YOLO weights named "
@@ -142,11 +173,11 @@ else:
 
     left_column, right_column = st.columns(2)
     with left_column:
-        st.subheader("Original Image")
+        st.subheader("📷 Original Image")
         st.image(image, use_container_width=True)
 
     try:
-        with st.spinner("Detecting waste..."): 
+        with st.spinner("✨ Detecting waste with AI..."): 
             model = load_model()
             result = model.predict(image, conf=confidence)[0]
 
@@ -155,11 +186,11 @@ else:
         detections = get_detections(result)
 
         with right_column:
-            st.subheader("Detection Result")
+            st.subheader("🎯 Detection Result")
             st.image(annotated_image, use_container_width=True)
 
         st.markdown("---")
-        st.subheader("Detected Garbage") 
+        st.subheader("📊 Detected Garbage Statistics") 
 
         if detections:
             detection_data = pd.DataFrame(detections)
@@ -169,34 +200,36 @@ else:
             for index, (item, count) in enumerate(garbage_counts.items()):
                 count_columns[index % len(count_columns)].metric(item, int(count))
 
-            st.write("") # مسافة بسيطة
+            st.write("") 
             st.dataframe(detection_data, use_container_width=True, hide_index=True)
             
+            st.markdown("### 📝 Recycling Guidelines")
             detected_names = list(dict.fromkeys(detection_data["Garbage"].tolist()))
             for item in detected_names:
                 description = GARBAGE_DESCRIPTIONS.get(item.title()) 
                 if description:
-                    st.info(f"**{item}:** {description}") # استبدال st.write ب st.info لإعطاء مظهر صندوقي جميل للوصف
+                    st.info(description)
         else:
             st.warning(
-                "No garbage was detected. Try lowering the confidence " 
+                "⚠️ No garbage was detected. Try lowering the confidence " 
                 "or using a clearer, closer image."
             )
 
         st.write("")
         st.download_button(
-            "Download Annotated Image",
+            "📥 Download Annotated Image",
             data=image_to_bytes(annotated_image),
             file_name="garbage_detection_result.jpg",  
             mime="image/jpeg"
         )
 
     except Exception as error:
-        st.error(f"The image could not be processed: {error}")
+        st.error(f"❌ The image could not be processed: {error}")
 
 st.write("")
-with st.expander("About this project"):
+with st.expander("ℹ️ About this project"):
     st.write(
-        "This prototype was created for a garbage detection project. "
-        "It uses a fine-tuned YOLO model to detect waste items and place a bounding box around each detected object."
+        "This prototype was created for a smart waste routing and monitoring project. "
+        "It utilizes a fine-tuned YOLO object detection model to accurately classify waste items "
+        "and provide eco-friendly disposal guidelines."
     )
