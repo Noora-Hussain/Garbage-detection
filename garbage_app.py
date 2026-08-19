@@ -12,12 +12,14 @@ st.set_page_config(
     layout="wide"
 )
 
-st.markdown(
+st.markdown("""
     <style>
+    /* تغيير لون الخلفية العامة للتطبيق */
     .stApp {
         background-color: #f8f9fa;
     }
     
+    /* تنسيق العناوين الرئيسية */
     h1 {
         color: #2b7a78;
         font-family: 'Helvetica Neue', sans-serif;
@@ -27,10 +29,7 @@ st.markdown(
         color: #3aafa9;
     }
     
-    css-1d391k8 {
-        background-color: #e2f8f8;
-    }
-    
+    /* تنسيق المربعات الإحصائية (Metrics) */
     div[data-testid="stMetric"] {
         background-color: #ffffff;
         padding: 15px;
@@ -39,6 +38,7 @@ st.markdown(
         border-left: 5px solid #3aafa9;
     }
     
+    /* تنسيق أزرار التفاعل */
     .stButton>button {
         background-color: #3aafa9;
         color: white;
@@ -52,7 +52,8 @@ st.markdown(
         background-color: #2b7a78;
         color: white;
     }
-, unsafe_allow_html=True)
+    </style>
+""", unsafe_allow_html=True)
 
 Garbage_Classes = ['Glass', 'Metal', 'Paper', 'Plastic', 'Waste']
 
