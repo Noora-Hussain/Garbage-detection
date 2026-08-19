@@ -11,49 +11,93 @@ st.set_page_config(
     page_icon="♻️",
     layout="wide"
 )
-
 st.markdown("""
     <style>
-    /* تغيير لون الخلفية العامة للتطبيق */
+    /* خلفية التطبيق العامة */
     .stApp {
-        background-color: #f8f9fa;
+        background-color: #0f172a;
+        color: #f8fafc;
     }
     
-    /* تنسيق العناوين الرئيسية */
+    /* تنسيق العناوين الرئيسية والفرعية */
     h1 {
-        color: #2b7a78;
-        font-family: 'Helvetica Neue', sans-serif;
+        color: #38bdf8;
+        font-family: 'Inter', sans-serif;
+        font-weight: 800;
+        letter-spacing: -0.5px;
     }
     
     h2, h3 {
-        color: #3aafa9;
+        color: #34d399;
+        font-family: 'Inter', sans-serif;
     }
     
-    /* تنسيق المربعات الإحصائية (Metrics) */
+    /* الشريط الجانبي */
+    [data-testid="stSidebar"] {
+        background-color: #1e293b;
+        border-right: 1px solid #334155;
+    }
+    
+    /* المربعات الإحصائية (Metrics) */
     div[data-testid="stMetric"] {
-        background-color: #ffffff;
-        padding: 15px;
-        border-radius: 10px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-        border-left: 5px solid #3aafa9;
+        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        padding: 20px;
+        border-radius: 14px;
+        border: 1px solid #334155;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+    }
+    div[data-testid="stMetric"] label {
+        color: #94a3b8 !important;
+    }
+    div[data-testid="stMetric"] div[data-testid="stMetricValue"] {
+        color: #38bdf8 !important;
     }
     
-    /* تنسيق أزرار التفاعل */
+    /* الأزرار العادية */
     .stButton>button {
-        background-color: #3aafa9;
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
         color: white;
-        border-radius: 8px;
+        border-radius: 10px;
         border: none;
-        padding: 10px 20px;
-        font-weight: bold;
+        padding: 12px 24px;
+        font-weight: 600;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        transition: all 0.3s ease;
     }
     
     .stButton>button:hover {
-        background-color: #2b7a78;
-        color: white;
+        background: linear-gradient(135deg, #059669 0%, #047857 100%);
+        box-shadow: 0 6px 16px rgba(16, 185, 129, 0.5);
+        transform: translateY(-2px);
+    }
+    
+    /* زر التحميل */
+    [data-testid="stDownloadButton"]>button {
+        background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+    }
+    [data-testid="stDownloadButton"]>button:hover {
+        background: linear-gradient(135deg, #0369a1 0%, #075985 100%);
+    }
+
+    /* صناديق المعلومات والإرشادات */
+    div.stInfo {
+        background-color: #1e293b;
+        border: 1px solid #334155;
+        border-left: 5px solid #38bdf8;
+        border-radius: 8px;
+        color: #f8fafc;
+    }
+    
+    div.stSuccess {
+        background-color: #1e293b;
+        border: 1px solid #334155;
+        border-left: 5px solid #10b981;
+        border-radius: 8px;
+        color: #f8fafc;
     }
     </style>
 """, unsafe_allow_html=True)
+
 
 Garbage_Classes = ['Glass', 'Metal', 'Paper', 'Plastic', 'Waste']
 
