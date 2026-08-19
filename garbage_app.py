@@ -134,12 +134,6 @@ else:
                 "or using a clearer, closer image."
             )
 
-        st.download_button(
-            "Download Annotated Image",
-            data=image_to_bytes(annotated_image),
-            file_name="garbage_detection_result.jpg",  
-            mime="image/jpeg"
-        )
 
     except Exception as error:
         st.error(f"The image could not be processed: {error}")
