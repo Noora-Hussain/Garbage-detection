@@ -20,7 +20,7 @@ st.set_page_config(
 
 
 # =========================================================
-# YOUR ORIGINAL FUNCTIONS
+# ORIGINAL FUNCTIONS - NOT CHANGED
 # =========================================================
 
 Garbage_Classes = ['Glass', 'Metal', 'Paper', 'Plastic', 'Waste']
@@ -156,7 +156,7 @@ header {
 }
 
 
-/* ================= SIDEBAR LOGO ================= */
+/* ================= SIDEBAR ================= */
 
 .logo-box {
     background-color: #DDF4E7;
@@ -232,6 +232,61 @@ header {
 }
 
 
+/* ================= STATUS ================= */
+
+.status-card {
+    background: linear-gradient(135deg, #173D2A, #245B3F);
+    color: white;
+    padding: 28px;
+    border-radius: 22px;
+    min-height: 125px;
+}
+
+.status-title {
+    font-size: 15px;
+    color: white;
+    opacity: 0.8;
+}
+
+.status-value {
+    font-size: 34px;
+    font-weight: 800;
+    color: white;
+    margin-top: 10px;
+}
+
+.status-description {
+    font-size: 14px;
+    color: white;
+    opacity: 0.8;
+    margin-top: 8px;
+}
+
+
+/* ================= ONLINE ================= */
+
+.online {
+    display: inline-block;
+    background-color: #D9F7E5;
+    color: #1D7A46 !important;
+    padding: 6px 13px;
+    border-radius: 30px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+
+/* ================= SECTION ================= */
+
+.section-title {
+    font-size: 22px;
+    font-weight: 800;
+    color: #17221D;
+    margin-top: 30px;
+    margin-bottom: 15px;
+}
+
+
 /* ================= WASTE CARDS ================= */
 
 .waste-card {
@@ -259,30 +314,6 @@ header {
     font-weight: 800;
     color: #2D7A4D;
     margin-top: 5px;
-}
-
-
-/* ================= ONLINE ================= */
-
-.online {
-    display: inline-block;
-    background-color: #D9F7E5;
-    color: #1D7A46 !important;
-    padding: 6px 13px;
-    border-radius: 30px;
-    font-size: 12px;
-    font-weight: 700;
-}
-
-
-/* ================= SECTION ================= */
-
-.section-title {
-    font-size: 22px;
-    font-weight: 800;
-    color: #17221D;
-    margin-top: 30px;
-    margin-bottom: 15px;
 }
 
 
@@ -432,6 +463,7 @@ if page == "🏠 Dashboard":
 
 
     # STREET STATUS
+
     with col1:
 
         st.html("""
@@ -474,6 +506,7 @@ if page == "🏠 Dashboard":
 
 
     # WASTE DETECTED
+
     with col2:
 
         st.html("""
@@ -514,6 +547,7 @@ if page == "🏠 Dashboard":
 
 
     # BIN STATUS
+
     with col3:
 
         st.html("""
@@ -576,23 +610,43 @@ if page == "🏠 Dashboard":
 
         with col:
 
-            st.markdown(f"""
-            <div class="waste-card">
+            st.html(f"""
+            <div style="
+                background: white;
+                padding: 20px;
+                border-radius: 18px;
+                border: 1px solid #E4E9E6;
+                text-align: center;
+                min-height: 145px;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            ">
 
-                <div class="waste-icon">
+                <div style="
+                    font-size: 32px;
+                    margin-bottom: 8px;
+                ">
                     {icon}
                 </div>
 
-                <div class="waste-name">
+                <div style="
+                    font-weight: 700;
+                    color: #17221D;
+                    font-size: 15px;
+                ">
                     {name}
                 </div>
 
-                <div class="waste-number">
+                <div style="
+                    font-size: 24px;
+                    font-weight: 800;
+                    color: #2D7A4D;
+                    margin-top: 5px;
+                ">
                     {number}
                 </div>
 
             </div>
-            """, unsafe_allow_html=True)
+            """)
 
 
     # =====================================================
@@ -700,27 +754,47 @@ elif page == "📷 Waste Detection":
 
     with col2:
 
-        st.markdown("""
-        <div class="card" style="min-height:300px;">
+        st.html("""
+        <div style="
+            background: white;
+            padding: 22px;
+            border-radius: 18px;
+            border: 1px solid #E4E9E6;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            min-height: 300px;
+        ">
 
-            <div class="card-icon">
+            <div style="
+                font-size: 27px;
+                margin-bottom: 8px;
+            ">
                 🔍
             </div>
 
-            <div class="card-title">
+            <div style="
+                color: #68736D;
+                font-size: 14px;
+                font-weight: 600;
+            ">
                 DETECTION RESULT
             </div>
 
-            <div class="card-value">
+            <div style="
+                color: #17221D;
+                font-size: 30px;
+                font-weight: 800;
+            ">
                 —
             </div>
 
-            <p style="color:#68736D;">
+            <p style="
+                color:#68736D;
+            ">
                 Upload an image and click Detect Waste.
             </p>
 
         </div>
-        """, unsafe_allow_html=True)
+        """)
 
 
     st.markdown("")
@@ -903,18 +977,36 @@ elif page == "♻️ Waste Classification":
 
         with col2:
 
-            st.markdown("""
-            <div class="card">
+            st.html("""
+            <div style="
+                background: white;
+                padding: 22px;
+                border-radius: 18px;
+                border: 1px solid #E4E9E6;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+                min-height: 130px;
+            ">
 
-                <div class="card-icon">
+                <div style="
+                    font-size: 27px;
+                    margin-bottom: 8px;
+                ">
                     ♻️
                 </div>
 
-                <div class="card-title">
+                <div style="
+                    color: #68736D;
+                    font-size: 14px;
+                    font-weight: 600;
+                ">
                     PREDICTED CATEGORY
                 </div>
 
-                <div class="card-value">
+                <div style="
+                    color: #17221D;
+                    font-size: 30px;
+                    font-weight: 800;
+                ">
                     —
                 </div>
 
@@ -923,7 +1015,7 @@ elif page == "♻️ Waste Classification":
                 </p>
 
             </div>
-            """, unsafe_allow_html=True)
+            """)
 
             st.progress(0)
 
@@ -967,19 +1059,34 @@ elif page == "♻️ Waste Classification":
 
         with col:
 
-            st.markdown(f"""
-            <div class="waste-card">
+            st.html(f"""
+            <div style="
+                background: white;
+                padding: 20px;
+                border-radius: 18px;
+                border: 1px solid #E4E9E6;
+                text-align: center;
+                min-height: 120px;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            ">
 
-                <div class="waste-icon">
+                <div style="
+                    font-size: 32px;
+                    margin-bottom: 8px;
+                ">
                     {icon}
                 </div>
 
-                <div class="waste-name">
+                <div style="
+                    font-weight: 700;
+                    color: #17221D;
+                    font-size: 15px;
+                ">
                     {name}
                 </div>
 
             </div>
-            """, unsafe_allow_html=True)
+            """)
 
 
 # =========================================================
@@ -1019,23 +1126,41 @@ elif page == "📊 Statistics":
 
         with col:
 
-            st.markdown(f"""
-            <div class="card">
+            st.html(f"""
+            <div style="
+                background: white;
+                padding: 22px;
+                border-radius: 18px;
+                border: 1px solid #E4E9E6;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+                min-height: 130px;
+            ">
 
-                <div class="card-icon">
+                <div style="
+                    font-size: 27px;
+                    margin-bottom: 8px;
+                ">
                     {icon}
                 </div>
 
-                <div class="card-title">
+                <div style="
+                    color: #68736D;
+                    font-size: 14px;
+                    font-weight: 600;
+                ">
                     {title}
                 </div>
 
-                <div class="card-value">
+                <div style="
+                    color: #17221D;
+                    font-size: 30px;
+                    font-weight: 800;
+                ">
                     {value}
                 </div>
 
             </div>
-            """, unsafe_allow_html=True)
+            """)
 
 
     st.markdown(
