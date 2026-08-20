@@ -6,6 +6,7 @@ import os
 from PIL import Image
 from ultralytics import YOLO
 
+
 # =========================================================
 # PAGE CONFIG
 # =========================================================
@@ -16,6 +17,11 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
+
+
+# =========================================================
+# YOUR ORIGINAL FUNCTIONS
+# =========================================================
 
 Garbage_Classes = ['Glass', 'Metal', 'Paper', 'Plastic', 'Waste']
 
@@ -89,6 +95,7 @@ def detect_garbage(image, confidence=0.25):
 
     return annotated_image, detections
 
+
 # =========================================================
 # CUSTOM CSS
 # =========================================================
@@ -96,12 +103,24 @@ def detect_garbage(image, confidence=0.25):
 st.markdown("""
 <style>
 
-    /* ---------- Main Background ---------- */
+    /* =========================
+       MAIN BACKGROUND
+       ========================= */
+
     .stApp {
         background-color: #F5F7F6;
     }
 
-    /* ---------- Sidebar ---------- */
+    .main .block-container {
+        padding-top: 2rem;
+        padding-bottom: 3rem;
+    }
+
+
+    /* =========================
+       SIDEBAR
+       ========================= */
+
     [data-testid="stSidebar"] {
         background-color: #17221D;
         padding-top: 25px;
@@ -111,7 +130,11 @@ st.markdown("""
         color: white;
     }
 
-    /* ---------- Hide Streamlit Default ---------- */
+
+    /* =========================
+       HIDE DEFAULT STREAMLIT
+       ========================= */
+
     #MainMenu {
         visibility: hidden;
     }
@@ -124,13 +147,11 @@ st.markdown("""
         visibility: hidden;
     }
 
-    /* ---------- Main Container ---------- */
-    .main .block-container {
-        padding-top: 2rem;
-        padding-bottom: 3rem;
-    }
 
-    /* ---------- Header ---------- */
+    /* =========================
+       MAIN TITLE
+       ========================= */
+
     .main-title {
         font-size: 38px;
         font-weight: 800;
@@ -144,15 +165,21 @@ st.markdown("""
         margin-bottom: 30px;
     }
 
-    /* ---------- Logo ---------- */
+
+    /* =========================
+       SIDEBAR LOGO
+       ========================= */
+
     .logo-box {
         background-color: #DDF4E7;
         width: 55px;
         height: 55px;
         border-radius: 16px;
+
         display: flex;
         align-items: center;
         justify-content: center;
+
         font-size: 28px;
         margin-bottom: 12px;
     }
@@ -169,127 +196,304 @@ st.markdown("""
         margin-bottom: 30px;
     }
 
-    /* ---------- Cards ---------- */
+
+    /* =========================
+       BUTTONS
+       ========================= */
+
+    .stButton > button {
+        background-color: #1B4332;
+        color: white;
+        border: none;
+
+        border-radius: 10px;
+
+        padding: 0.65rem 1.2rem;
+
+        font-weight: 700;
+
+        transition: 0.2s ease;
+    }
+
+    .stButton > button:hover {
+        background-color: #52796F;
+        color: white;
+    }
+
+
+    /* =========================
+       CARDS
+       ========================= */
+
     .card {
         background-color: white;
+
         padding: 22px;
+
         border-radius: 18px;
+
         border: 1px solid #E4E9E6;
+
         box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+
         min-height: 130px;
     }
 
     .card-title {
         color: #68736D;
+
         font-size: 14px;
+
         font-weight: 600;
+
         margin-bottom: 8px;
     }
 
     .card-value {
         color: #17221D;
+
         font-size: 30px;
+
         font-weight: 800;
     }
 
     .card-icon {
         font-size: 27px;
+
         margin-bottom: 8px;
     }
 
-    /* ---------- Status Card ---------- */
+
+    /* =========================
+       STATUS CARD
+       ========================= */
+
     .status-card {
-        background: linear-gradient(135deg, #173D2A, #245B3F);
+        background: linear-gradient(
+            135deg,
+            #173D2A,
+            #245B3F
+        );
+
         color: white;
+
         padding: 28px;
+
         border-radius: 22px;
+
         min-height: 180px;
     }
 
     .status-title {
         font-size: 15px;
+
+        color: white;
+
         opacity: 0.8;
     }
 
     .status-value {
         font-size: 34px;
+
+        color: white;
+
         font-weight: 800;
+
         margin-top: 10px;
     }
 
     .status-description {
         font-size: 14px;
+
+        color: white;
+
         opacity: 0.8;
+
         margin-top: 8px;
     }
 
-    /* ---------- Online Indicator ---------- */
+
+    /* =========================
+       ONLINE STATUS
+       ========================= */
+
     .online {
         display: inline-block;
+
         background-color: #D9F7E5;
-        color: #1D7A46;
+
+        color: #1D7A46 !important;
+
         padding: 6px 13px;
+
         border-radius: 30px;
+
         font-size: 12px;
+
         font-weight: 700;
     }
 
-    /* ---------- Section Title ---------- */
+
+    /* =========================
+       SECTION TITLE
+       ========================= */
+
     .section-title {
         font-size: 22px;
+
         font-weight: 800;
+
         color: #17221D;
+
         margin-top: 30px;
+
         margin-bottom: 15px;
     }
 
-    /* ---------- Classification Cards ---------- */
+
+    /* =========================
+       WASTE CARDS
+       ========================= */
+
     .waste-card {
         background-color: white;
+
         padding: 20px;
+
         border-radius: 18px;
+
         border: 1px solid #E4E9E6;
+
         text-align: center;
+
         min-height: 145px;
     }
 
     .waste-icon {
         font-size: 32px;
+
         margin-bottom: 8px;
     }
 
     .waste-name {
         font-weight: 700;
+
         color: #17221D;
+
         font-size: 15px;
     }
 
     .waste-number {
         font-size: 24px;
+
         font-weight: 800;
+
         color: #2D7A4D;
+
         margin-top: 5px;
     }
 
-    /* ---------- Upload Box ---------- */
+
+    /* =========================
+       UPLOAD
+       ========================= */
+
     .upload-title {
         font-size: 18px;
+
         font-weight: 700;
+
         color: #17221D;
+
         margin-bottom: 5px;
     }
 
     .upload-description {
         color: #68736D;
+
         font-size: 13px;
+
         margin-bottom: 15px;
     }
 
-    /* ---------- Footer ---------- */
+    [data-testid="stFileUploaderDropzone"] {
+        background-color: white;
+
+        border: 2px dashed #52796F;
+
+        border-radius: 12px;
+    }
+
+
+    /* =========================
+       METRICS
+       ========================= */
+
+    [data-testid="stMetric"] {
+        background-color: white;
+
+        border-radius: 12px;
+
+        padding: 1rem;
+
+        box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
+
+    [data-testid="stMetricValue"] {
+        color: #1B4332 !important;
+
+        font-weight: 800 !important;
+    }
+
+    [data-testid="stMetricLabel"] {
+        color: #5B6B63 !important;
+    }
+
+
+    /* =========================
+       DATAFRAME
+       ========================= */
+
+    [data-testid="stDataFrame"] {
+        border-radius: 10px;
+
+        overflow: hidden;
+    }
+
+
+    /* =========================
+       ALERTS
+       ========================= */
+
+    div[data-testid="stAlert"] {
+        border-radius: 10px;
+    }
+
+
+    /* =========================
+       EXPANDER
+       ========================= */
+
+    details {
+        background-color: white;
+
+        border-radius: 10px;
+
+        border: 1px solid #E3E8E5;
+    }
+
+
+    /* =========================
+       FOOTER
+       ========================= */
+
     .footer {
         text-align: center;
+
         color: #8A938E;
+
         font-size: 12px;
+
         padding-top: 40px;
     }
 
@@ -330,7 +534,10 @@ with st.sidebar:
     st.markdown("---")
 
     st.markdown("""
-    <div style="font-size:12px;color:#AAB5AF;">
+    <div style="
+        font-size:12px;
+        color:#AAB5AF;
+    ">
         SYSTEM STATUS
     </div>
 
@@ -339,7 +546,8 @@ with st.sidebar:
         padding:10px;
         background:#22352C;
         border-radius:10px;
-        font-size:13px;">
+        font-size:13px;
+    ">
         🟢 &nbsp; System Online
     </div>
     """, unsafe_allow_html=True)
@@ -351,10 +559,10 @@ with st.sidebar:
 
 if page == "🏠 Dashboard":
 
-    # Header
     col1, col2 = st.columns([4, 1])
 
     with col1:
+
         st.markdown(
             '<div class="main-title">Smart Waste Dashboard</div>',
             unsafe_allow_html=True
@@ -368,6 +576,7 @@ if page == "🏠 Dashboard":
         )
 
     with col2:
+
         st.markdown(
             '<div style="text-align:right;">'
             '<span class="online">● SYSTEM ONLINE</span>'
@@ -375,8 +584,9 @@ if page == "🏠 Dashboard":
             unsafe_allow_html=True
         )
 
+
     # =====================================================
-    # STATUS + QUICK INFO
+    # STATUS
     # =====================================================
 
     col1, col2, col3 = st.columns([1.5, 1, 1])
@@ -401,12 +611,15 @@ if page == "🏠 Dashboard":
         </div>
         """, unsafe_allow_html=True)
 
+
     with col2:
 
         st.markdown("""
         <div class="card">
 
-            <div class="card-icon">🗑️</div>
+            <div class="card-icon">
+                🗑️
+            </div>
 
             <div class="card-title">
                 Waste Detected
@@ -419,12 +632,15 @@ if page == "🏠 Dashboard":
         </div>
         """, unsafe_allow_html=True)
 
+
     with col3:
 
         st.markdown("""
         <div class="card">
 
-            <div class="card-icon">📡</div>
+            <div class="card-icon">
+                📡
+            </div>
 
             <div class="card-title">
                 Bin Status
@@ -437,8 +653,9 @@ if page == "🏠 Dashboard":
         </div>
         """, unsafe_allow_html=True)
 
+
     # =====================================================
-    # WASTE TYPES
+    # WASTE OVERVIEW
     # =====================================================
 
     st.markdown(
@@ -477,6 +694,7 @@ if page == "🏠 Dashboard":
 
             </div>
             """, unsafe_allow_html=True)
+
 
     # =====================================================
     # ACTIVITY
@@ -546,7 +764,9 @@ elif page == "📷 Waste Detection":
         unsafe_allow_html=True
     )
 
+
     col1, col2 = st.columns([1.2, 1])
+
 
     with col1:
 
@@ -560,11 +780,13 @@ elif page == "📷 Waste Detection":
         </div>
         """, unsafe_allow_html=True)
 
+
         uploaded_file = st.file_uploader(
             "Choose an image",
             type=["jpg", "jpeg", "png"],
             label_visibility="collapsed"
         )
+
 
         if uploaded_file:
 
@@ -573,6 +795,7 @@ elif page == "📷 Waste Detection":
                 caption="Uploaded Street Image",
                 use_container_width=True
             )
+
 
     with col2:
 
@@ -592,26 +815,156 @@ elif page == "📷 Waste Detection":
             </div>
 
             <p style="color:#68736D;">
-                Your detection function will appear here.
+                Upload an image and click Detect Waste.
             </p>
 
         </div>
         """, unsafe_allow_html=True)
 
-        st.markdown("")
 
-        if st.button(
-            "🔍 Detect Waste",
-            use_container_width=True
-        ):
+    st.markdown("")
 
-            # =================================================
-            # ADD YOUR DETECTION FUNCTION HERE
-            # =================================================
 
-            st.info(
-                "Connect your waste detection model here."
+    if st.button(
+        "🔍 Detect Waste",
+        use_container_width=True
+    ):
+
+        if uploaded_file is None:
+
+            st.warning(
+                "Please upload an image first."
             )
+
+        else:
+
+            try:
+
+                with st.spinner("Detecting waste..."):
+
+                    image = Image.open(
+                        uploaded_file
+                    ).convert("RGB")
+
+                    annotated_image, detections = detect_garbage(
+                        image,
+                        confidence=0.25
+                    )
+
+
+                st.success(
+                    "Waste detection completed!"
+                )
+
+
+                st.subheader(
+                    "Detection Result"
+                )
+
+                st.image(
+                    annotated_image,
+                    use_container_width=True
+                )
+
+
+                st.subheader(
+                    "Detected Garbage"
+                )
+
+
+                if detections:
+
+                    detection_data = pd.DataFrame(
+                        detections
+                    )
+
+                    garbage_counts = (
+                        detection_data["Garbage"]
+                        .value_counts()
+                    )
+
+
+                    count_columns = st.columns(
+                        min(
+                            len(garbage_counts),
+                            4
+                        )
+                    )
+
+
+                    for index, (
+                        item,
+                        count
+                    ) in enumerate(
+                        garbage_counts.items()
+                    ):
+
+                        count_columns[
+                            index % len(count_columns)
+                        ].metric(
+                            item,
+                            int(count)
+                        )
+
+
+                    st.dataframe(
+                        detection_data,
+                        use_container_width=True,
+                        hide_index=True
+                    )
+
+
+                    detected_names = list(
+                        dict.fromkeys(
+                            detection_data[
+                                "Garbage"
+                            ].tolist()
+                        )
+                    )
+
+
+                    for item in detected_names:
+
+                        description = (
+                            GARBAGE_DESCRIPTIONS.get(
+                                item.title()
+                            )
+                        )
+
+                        if description:
+
+                            st.write(
+                                f"**{item}:** "
+                                f"{description}"
+                            )
+
+
+                    st.download_button(
+                        "⬇️ Download Annotated Image",
+                        data=image_to_bytes(
+                            annotated_image
+                        ),
+                        file_name=(
+                            "garbage_detection_result.jpg"
+                        ),
+                        mime="image/jpeg"
+                    )
+
+
+                else:
+
+                    st.warning(
+                        "No garbage was detected. "
+                        "Try lowering the confidence "
+                        "or using a clearer image."
+                    )
+
+
+            except Exception as error:
+
+                st.error(
+                    f"The image could not be processed: {error}"
+                )
 
 
 # =========================================================
@@ -621,7 +974,9 @@ elif page == "📷 Waste Detection":
 elif page == "♻️ Waste Classification":
 
     st.markdown(
-        '<div class="main-title">Waste Classification</div>',
+        '<div class="main-title">'
+        'Waste Classification'
+        '</div>',
         unsafe_allow_html=True
     )
 
@@ -632,14 +987,17 @@ elif page == "♻️ Waste Classification":
         unsafe_allow_html=True
     )
 
+
     uploaded_file = st.file_uploader(
         "Upload Waste Image",
         type=["jpg", "jpeg", "png"]
     )
 
+
     if uploaded_file:
 
         col1, col2 = st.columns(2)
+
 
         with col1:
 
@@ -648,6 +1006,7 @@ elif page == "♻️ Waste Classification":
                 caption="Waste Image",
                 use_container_width=True
             )
+
 
         with col2:
 
@@ -673,31 +1032,39 @@ elif page == "♻️ Waste Classification":
             </div>
             """, unsafe_allow_html=True)
 
+
             st.progress(0)
 
-            st.caption("Confidence: —")
+            st.caption(
+                "Confidence: —"
+            )
+
 
         if st.button(
             "♻️ Classify Waste",
             use_container_width=True
         ):
 
-            # =================================================
-            # ADD YOUR CLASSIFICATION FUNCTION HERE
-            # =================================================
-
             st.info(
-                "Connect your classification model here."
+                "Your YOLO detection model already performs "
+                "waste classification."
             )
 
-    # Categories
+
+    # =====================================================
+    # CATEGORIES
+    # =====================================================
 
     st.markdown(
-        '<div class="section-title">Supported Categories</div>',
+        '<div class="section-title">'
+        'Supported Categories'
+        '</div>',
         unsafe_allow_html=True
     )
 
+
     cols = st.columns(5)
+
 
     categories = [
         ("🪟", "Glass"),
@@ -707,7 +1074,14 @@ elif page == "♻️ Waste Classification":
         ("🗑️", "Waste")
     ]
 
-    for col, (icon, name) in zip(cols, categories):
+
+    for col, (
+        icon,
+        name
+    ) in zip(
+        cols,
+        categories
+    ):
 
         with col:
 
@@ -733,7 +1107,9 @@ elif page == "♻️ Waste Classification":
 elif page == "📊 Statistics":
 
     st.markdown(
-        '<div class="main-title">Waste Statistics</div>',
+        '<div class="main-title">'
+        'Waste Statistics'
+        '</div>',
         unsafe_allow_html=True
     )
 
@@ -744,11 +1120,9 @@ elif page == "📊 Statistics":
         unsafe_allow_html=True
     )
 
-    # =====================================================
-    # METRICS
-    # =====================================================
 
     col1, col2, col3, col4 = st.columns(4)
+
 
     metrics = [
         ("🗑️", "Total Waste", "0"),
@@ -757,7 +1131,12 @@ elif page == "📊 Statistics":
         ("📡", "System Status", "Online")
     ]
 
-    for col, (icon, title, value) in zip(
+
+    for col, (
+        icon,
+        title,
+        value
+    ) in zip(
         [col1, col2, col3, col4],
         metrics
     ):
@@ -782,14 +1161,18 @@ elif page == "📊 Statistics":
             </div>
             """, unsafe_allow_html=True)
 
+
     # =====================================================
     # CHART
     # =====================================================
 
     st.markdown(
-        '<div class="section-title">Waste Distribution</div>',
+        '<div class="section-title">'
+        'Waste Distribution'
+        '</div>',
         unsafe_allow_html=True
     )
+
 
     stats = pd.DataFrame({
         "Category": [
@@ -808,6 +1191,7 @@ elif page == "📊 Statistics":
         ]
     })
 
+
     fig = px.bar(
         stats,
         x="Category",
@@ -815,14 +1199,21 @@ elif page == "📊 Statistics":
         text="Count"
     )
 
+
     fig.update_layout(
         height=400,
         plot_bgcolor="white",
         paper_bgcolor="white",
-        margin=dict(l=20, r=20, t=20, b=20),
+        margin=dict(
+            l=20,
+            r=20,
+            t=20,
+            b=20
+        ),
         xaxis_title="",
         yaxis_title="Number of Items"
     )
+
 
     st.plotly_chart(
         fig,
@@ -837,7 +1228,9 @@ elif page == "📊 Statistics":
 elif page == "🗺️ Street Monitoring":
 
     st.markdown(
-        '<div class="main-title">Street Monitoring</div>',
+        '<div class="main-title">'
+        'Street Monitoring'
+        '</div>',
         unsafe_allow_html=True
     )
 
@@ -848,9 +1241,15 @@ elif page == "🗺️ Street Monitoring":
         unsafe_allow_html=True
     )
 
-    # Street status
 
-    col1, col2 = st.columns([1.5, 1])
+    # =====================================================
+    # STREET STATUS
+    # =====================================================
+
+    col1, col2 = st.columns(
+        [1.5, 1]
+    )
+
 
     with col1:
 
@@ -872,6 +1271,7 @@ elif page == "🗺️ Street Monitoring":
         </div>
         """, unsafe_allow_html=True)
 
+
     with col2:
 
         st.markdown("""
@@ -885,33 +1285,33 @@ elif page == "🗺️ Street Monitoring":
                 CURRENT LOCATION
             </div>
 
-            <div class="card-value"
-                 style="font-size:22px;">
+            <div
+                class="card-value"
+                style="font-size:22px;"
+            >
                 Street #01
             </div>
 
         </div>
         """, unsafe_allow_html=True)
 
-    # Camera area
+
+    # =====================================================
+    # CAMERA
+    # =====================================================
 
     st.markdown(
-        '<div class="section-title">📹 Live Camera</div>',
+        '<div class="section-title">'
+        '📹 Live Camera'
+        '</div>',
         unsafe_allow_html=True
     )
 
+
     st.info(
-        "Your live camera / street detection function can be connected here."
+        "Your live camera / street detection function "
+        "can be connected here."
     )
-
-    # =====================================================
-    # ADD CAMERA FUNCTION HERE
-    # =====================================================
-
-    # Example:
-    #
-    # frame = your_camera_function()
-    # st.image(frame)
 
 
 # =========================================================
