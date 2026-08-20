@@ -847,3 +847,85 @@ st.markdown("""
     Smart Waste Bin • AI-Powered Waste Management System
 </div>
 """, unsafe_allow_html=True)
+
+
+import io
+import os
+
+import pandas as pd
+import streamlit as st
+from PIL import Image
+from ultralytics import YOLO
+
+
+Garbage_Classes = ['Glass', 'Metal', 'Paper', 'Plastic', 'Waste']
+
+GARBAGE_DESCRIPTIONS = {
+    "Glass": "Glass: Please place it in the glass container and ensure it is clean and unbroken.",
+    "Metal": "Metal: Aluminum cans and packaging are recyclable, please empty them.",
+    "Paper": "Paper: Clean and dry paper, please place it in the designated paper bin.",
+    "Plastic": "Plastic: Plastic bottles and containers, please rinse them before recycling.",
+    "Waste": "General Waste: These are non-recyclable wastes, please dispose of them in the general waste bin."
+}
+
+
+APP_FOLDER = os.path.dirname(os.path.abspath(__file__))
+MODEL_PATH = os.path.join(APP_FOLDER, "best.pt")
+
+
+@st.cache_resource
+def load_model():
+    return YOLO(MODEL_PATH)
+
+
+def get_detections(result):
+    detections = []
+
+    if result.boxes is None:
+        return detections
+
+    for box in result.boxes:
+        class_id = int(box.cls[0])
+        confidence = float(box.conf[0])
+        x1, y1, x2, y2 = box.xyxy[0].tolist()
+
+        detections.append({
+            "Garbage": result.names[class_id],
+            "Confidence": f"{confidence * 100:.1f}%",
+            "Box": f"({x1:.0f}, {y1:.0f}) to ({x2:.0f}, {y2:.0f})"
+        })
+
+    return detections
+
+
+def image_to_bytes(image):
+    buffer = io.BytesIO()
+    image.save(buffer, format="JPEG")
+    return buffer.getvalue()
+
+
+def detect_garbage(image, confidence=0.25):
+    """
+    Detect garbage using the trained YOLO model.
+    """
+
+    if not os.path.exists(MODEL_PATH):
+        raise FileNotFoundError(
+            "Model file not found. Make sure best.pt is in the same folder."
+        )
+
+    model = load_model()
+
+    result = model.predict(
+        image,
+        conf=confidence
+    )[0]
+
+    # Create annotated image
+    plotted_image = result.plot()[:, :, ::-1]
+    annotated_image = Image.fromarray(plotted_image)
+
+    # Get detection information
+    detections = get_detections(result)
+
+    return annotated_image, detections
