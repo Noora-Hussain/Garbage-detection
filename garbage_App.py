@@ -6,6 +6,16 @@ import os
 from PIL import Image
 from ultralytics import YOLO
 
+# =========================================================
+# PAGE CONFIG
+# =========================================================
+
+st.set_page_config(
+    page_title="Smart Waste Bin",
+    page_icon="🗑️",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
 Garbage_Classes = ['Glass', 'Metal', 'Paper', 'Plastic', 'Waste']
 
@@ -78,17 +88,6 @@ def detect_garbage(image, confidence=0.25):
     detections = get_detections(result)
 
     return annotated_image, detections
-
-# =========================================================
-# PAGE CONFIG
-# =========================================================
-
-st.set_page_config(
-    page_title="Smart Waste Bin",
-    page_icon="🗑️",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
 
 # =========================================================
 # CUSTOM CSS
