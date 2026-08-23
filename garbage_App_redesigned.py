@@ -9,7 +9,6 @@ from PIL import Image
 from ultralytics import YOLO
 from datetime import datetime
 
-# 1. إعدادات الصفحة والتصميم (CSS Styles)
 st.set_page_config(
     page_title="EcoVision | Smart Waste Detection",
     page_icon="♻️",
@@ -40,8 +39,6 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
-Garbage_Classes = ['Battery', 'Glass', 'Medical', 'Metal', 'Organic', 'Paper', 'Plastic', 'SmartPhone'] # Classes name
-
 GARBAGE_DESCRIPTIONS = {
     "Battery": "Take to a specialized battery recycling drop-off point.",
     "Glass": "Place in the designated glass recycling container.",
@@ -56,15 +53,9 @@ GARBAGE_DESCRIPTIONS = {
 APP_FOLDER = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATH = os.path.join(APP_FOLDER, "best.pt")
 
-
 @st.cache_resource
 def load_my_model():
     return YOLO(MODEL_PATH)
-
-def get_image_bytes(img):
-    buf = io.BytesIO()
-    img.save(buf, format="JPEG")
-    return buf.getvalue()
 
 def count_detected_objects(result):
     if result.boxes is None:
@@ -160,7 +151,6 @@ elif page == "🛣️ Street Detection":
 
         if img_file is not None:
             image = Image.open(img_file).convert("RGB")
-            st.session_state.current_image = image
 
             with st.spinner("AI is analyzing..."):
                 model = load_my_model()
