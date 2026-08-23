@@ -4,6 +4,7 @@ import pandas as pd
 import streamlit as st
 from PIL import Image
 from ultralytics import YOLO
+from datetime import datetime
 
 st.set_page_config(
     page_title="EcoVision | Smart Waste Detection",
@@ -238,7 +239,8 @@ with st.sidebar:
         [
             "🏠 Home",
             "🛣️ Street Detection",
-            "♻️ Waste Assistant"
+            "♻️ Waste Assistant",
+            "🚨 Report a Dirty Area"
         ]
     )
 
@@ -327,7 +329,6 @@ elif page == "🛣️ Street Detection":
         "show their locations, and estimate the cleanliness status."
     )
 
-    # اختيار المنطقة لصفحة Street Detection
     selected_area = select_target_area("street")
 
     image_file = st.file_uploader(
@@ -376,7 +377,6 @@ elif page == "♻️ Waste Assistant":
         "EcoVision will identify the item and tell you how to dispose of it."
     )
 
-    # اختيار المنطقة لصفحة Waste Assistant
     selected_area = select_target_area("assistant")
 
     source = st.radio(
@@ -424,4 +424,97 @@ elif page == "♻️ Waste Assistant":
             except Exception as error:
                 st.error(
                     f"The image could not be processed: {error}"
+                )
+
+
+# =========================================================
+# REPORT A DIRTY AREA PAGE
+# =========================================================
+elif page == "🚨 Report a Dirty Area":
+
+    st.markdown("## 🚨 Report a Dirty Area")
+    st.write(
+        "Help keep Bahrain clean! Select the location, take or upload a photo of the dirty area, "
+        "let the AI analyze it, and submit your official report."
+    )
+
+    # 1. تحديد الموقع
+    selected_area = select_target_area("report")
+
+    # 2. تصوير / رفع المكان
+    report_source = st.radio(
+        "Choose image source for report",
+        ["Upload Image", "Use Camera"],
+        horizontal=True,
+        key="report_source"
+    )
+
+    if report_source == "Upload Image":
+        report_image_file = st.file_uploader(
+            "Upload a photo of the dirty area",
+            type=["jpg", "jpeg", "png"],
+            key="report_upload"
+        )
+    else:
+        report_image_file = st.camera_input(
+            "Take a photo of the dirty area",
+            key="report_camera"
+        )
+
+    if report_image_file is not None:
+        if not os.path.exists(MODEL_PATH):
+            st.error(
+                "Model file not found. Place your trained YOLO weights "
+                "named best.pt in the same folder as this app."
+            )
+        else:
+            try:
+                image = Image.open(report_image_file).convert("RGB")
+                
+                with st.spinner("🤖 AI is analyzing the waste..."):
+                    model = load_model()
+                    result = model.predict(
+                        image,
+                        conf=confidence,
+                        verbose=False
+                    )[0]
+
+                detections = get_detections(result)
+                num_objects = len(detections)
+
+                # تحديد الأولوية بناءً على عدد القطع المكتشفة
+                if num_objects > 5:
+                    priority = "🔴 High Priority"
+                elif num_objects > 2:
+                    priority = "🟠 Medium Priority"
+                else:
+                    priority = "🟢 Low Priority"
+
+                current_date = datetime.now().strftime("%d %b %Y")
+                report_id = "Report #1024"  # يمكنك جعلها ديناميكية لاحقاً
+
+                st.markdown("---")
+                st.markdown("### 📋 Report Preview")
+                
+                col1, col2 = st.columns(2)
+                with col1:
+                    st.image(image, caption="Submitted Photo", use_container_width=True)
+                with col2:
+                    st.markdown(f"### **{report_id}**")
+                    st.markdown(f"📍 **Location:** {selected_area}")
+                    st.markdown(f"🗑️ **Garbage Objects:** {num_objects} detected")
+                    st.markdown(f"⚡ **Priority:** {priority}")
+                    st.markdown(f"📅 **Date:** {current_date}")
+
+                # 3. زر Submit
+                st.markdown("---")
+                if st.button("🚀 Submit Report", type="primary"):
+                    st.success(f"✅ Your report (**{report_id}**) for **{selected_area}** has been successfully submitted! Thank you for helping clean the community.")
+                    
+                    # يمكنك هنا لاحقاً إضافة كود لحفظ تفاصيل البلاغ في ملف CSV أو قاعدة بيانات
+                    # report_data = {"ID": report_id, "Area": selected_area, "Objects": num_objects, "Priority": priority, "Date": current_date}
+
+            except Exception as error:
+                st.error(
+                    f"Could not process the report image: {error}"
                 )
