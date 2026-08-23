@@ -31,10 +31,10 @@ MODEL_PATH = os.path.join(APP_FOLDER, "best.pt")
 
 @st.cache_resource
 def load_model():
-    return YOLO(MODEL_PATH) # 
+    return YOLO(MODEL_PATH)
 
 def get_detections(result):
-    detections = [] # 
+    detections = []
 
     if result.boxes is None:
         return detections
@@ -42,13 +42,13 @@ def get_detections(result):
     for box in result.boxes:
         class_id = int(box.cls[0])
         confidence = float(box.conf[0])
-        x1, y1, x2, y2 = box.xyxy[0].tolist() #
+        x1, y1, x2, y2 = box.xyxy[0].tolist()
 
         detections.append({
             "Garbage": result.names[class_id],
             "Confidence": f"{confidence * 100:.1f}%",
             "Box": f"({x1:.0f}, {y1:.0f}) to ({x2:.0f}, {y2:.0f})"
-        })#
+        })
 
     return detections
 
@@ -56,7 +56,7 @@ def get_detections(result):
 def image_to_bytes(image):
     buffer = io.BytesIO()
     image.save(buffer, format="JPEG")
-    return buffer.getvalue() # 
+    return buffer.getvalue()
 
 
 def get_street_status(number_of_objects):
@@ -66,9 +66,21 @@ def get_street_status(number_of_objects):
         return "SOME GARBAGE", "Some garbage was detected on this street."
     else:
         return "NEEDS CLEANING", "Several garbage objects were detected. This area may need cleaning."
-        # 
 
+
+# =========================================================
+# HELPER FUNCTION FOR AREA SELECTION
+# =========================================================
+def select_target_area(key_suffix):
+    main_areas = ["Manama", "Muharraq", "Riffa", "Isa Town", "Hamad Town", "Other"]
+    selected_main_area = st.selectbox("Select Area:", main_areas, key=f"area_select_{key_suffix}")
     
+    if selected_main_area == "Other":
+        custom_area = st.text_input("Please enter the area name:", key=f"custom_area_{key_suffix}")
+        return custom_area if custom_area else "Unspecified"
+    return selected_main_area
+
+
 def show_detection_results(result, mode, selected_area):
     st.info(f"📍 Selected Area / Location: **{selected_area}**")
     
@@ -103,7 +115,7 @@ def show_detection_results(result, mode, selected_area):
             st.write("No garbage was detected in this image.")
 
     st.markdown("## ♻️ Detected Garbage")
-# 
+
     if detections:
         detection_data = pd.DataFrame(detections)
         garbage_counts = detection_data["Garbage"].value_counts()
@@ -311,9 +323,12 @@ elif page == "🛣️ Street Detection":
 
     st.markdown("## 🛣️ Street Garbage Detection")
     st.write(
-        "Upload a street image and the AI will detect garbage objects, "
+        "Select the area, upload a street image, and the AI will detect garbage objects, "
         "show their locations, and estimate the cleanliness status."
     )
+
+    # اختيار المنطقة لصفحة Street Detection
+    selected_area = select_target_area("street")
 
     image_file = st.file_uploader(
         "Upload a street image",
@@ -342,7 +357,8 @@ elif page == "🛣️ Street Detection":
 
                 show_detection_results(
                     result,
-                    "Street Detection"
+                    "Street Detection",
+                    selected_area
                 )
 
             except Exception as error:
@@ -356,9 +372,12 @@ elif page == "♻️ Waste Assistant":
 
     st.markdown("## ♻️ Personal Waste Assistant")
     st.write(
-        "Take a photo or upload an image of a waste item. "
+        "Select the area, take a photo or upload an image of a waste item. "
         "EcoVision will identify the item and tell you how to dispose of it."
     )
+
+    # اختيار المنطقة لصفحة Waste Assistant
+    selected_area = select_target_area("assistant")
 
     source = st.radio(
         "Choose image source",
@@ -398,7 +417,8 @@ elif page == "♻️ Waste Assistant":
 
                 show_detection_results(
                     result,
-                    "Waste Assistant"
+                    "Waste Assistant",
+                    selected_area
                 )
 
             except Exception as error:
