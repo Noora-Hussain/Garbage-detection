@@ -6,9 +6,7 @@ from PIL import Image
 from ultralytics import YOLO
 from datetime import datetime
 
-# =========================================================
 # 1. إعدادات الصفحة والتصميم (CSS Styles)
-# =========================================================
 st.set_page_config(
     page_title="EcoVision | Smart Waste Detection",
     page_icon="♻️",
@@ -39,10 +37,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
-# =========================================================
-# 2. الثوابت وإعدادات النموذج
-# =========================================================
-Garbage_Classes = ['Battery', 'Glass', 'Medical', 'Metal', 'Organic', 'Paper', 'Plastic', 'SmartPhone']
+Garbage_Classes = ['Battery', 'Glass', 'Medical', 'Metal', 'Organic', 'Paper', 'Plastic', 'SmartPhone'] # Classes name
 
 GARBAGE_DESCRIPTIONS = {
     "Battery": "Take to a specialized battery recycling drop-off point.",
@@ -53,29 +48,23 @@ GARBAGE_DESCRIPTIONS = {
     "Paper": "Place in the designated paper recycling bin.",
     "Plastic": "Place in the plastic recycling bin.",
     "SmartPhone": "Take to an e-waste recycling facility."
-}
+} # GARBAGE DESCRIPTIONS about classes
 
 APP_FOLDER = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATH = os.path.join(APP_FOLDER, "best.pt")
 
 
-# =========================================================
-# 3. الدوال المبسطة للمبتدئين (Helper Functions)
-# =========================================================
 
 @st.cache_resource
 def load_my_model():
-    """دالة لتحميل نموذج الذكاء الاصطناعي"""
     return YOLO(MODEL_PATH)
 
 def get_image_bytes(img):
-    """دالة لتحويل الصورة إلى بايتات لتحميلها"""
     buf = io.BytesIO()
     img.save(buf, format="JPEG")
     return buf.getvalue()
 
 def count_detected_objects(result):
-    """دالة لاستخراج عدد الأشياء المكتشفة من نموذج الذكاء الاصطناعي"""
     if result.boxes is None:
         return []
     
@@ -90,7 +79,6 @@ def count_detected_objects(result):
     return detections
 
 def choose_area_menu(unique_key):
-    """دالة لعرض قائمة اختيار المناطق"""
     areas = ["Manama", "Muharraq", "Riffa", "Isa Town", "Hamad Town", "Other"]
     selected = st.selectbox("Select Area:", areas, key=unique_key)
     
@@ -100,9 +88,6 @@ def choose_area_menu(unique_key):
     return selected
 
 
-# =========================================================
-# 4. تهيئة البيانات المؤقتة (Session State)
-# =========================================================
 if "reports_list" not in st.session_state:
     st.session_state.reports_list = [
         {"ID": "Report #1021", "Area": "Manama", "Objects": 4, "Priority": "🟠 Medium", "Date": "20 Aug 2026", "Status": "Resolved"},
@@ -110,9 +95,6 @@ if "reports_list" not in st.session_state:
     ]
 
 
-# =========================================================
-# 5. القائمة الجانبية (Sidebar)
-# =========================================================
 with st.sidebar:
     st.markdown("## ♻️ EcoVision")
     st.caption("Smart Waste Detection")
@@ -133,11 +115,7 @@ with st.sidebar:
     confidence = st.slider("AI Confidence", 0.10, 0.90, 0.25, 0.05)
 
 
-# =========================================================
-# 6. صفحات التطبيق (Pages)
-# =========================================================
 
-# --- صفحة البداية ---
 if page == "🏠 Home":
     st.markdown("""
     <div class="hero">
@@ -164,7 +142,6 @@ if page == "🏠 Home":
         """, unsafe_allow_html=True)
 
 
-# --- صفحة فحص الشارع ---
 elif page == "🛣️ Street Detection":
     st.markdown("## 🛣️ Street Garbage Detection")
     st.write("Upload a street image to let the AI analyze waste presence.")
@@ -179,7 +156,6 @@ elif page == "🛣️ Street Detection":
             model = load_my_model()
             res = model.predict(image, conf=confidence, verbose=False)[0]
 
-        # عرض النتائج
         col1, col2 = st.columns(2)
         with col1:
             st.image(image, caption="Original", use_container_width=True)
@@ -194,7 +170,6 @@ elif page == "🛣️ Street Detection":
             st.success("✅ Clean street! No garbage found.")
 
 
-# --- صفحة مساعد النفايات ---
 elif page == "♻️ Waste Assistant":
     st.markdown("## ♻️ Personal Waste Assistant")
     
@@ -219,7 +194,6 @@ elif page == "♻️ Waste Assistant":
             st.warning("No item recognized.")
 
 
-# --- صفحة الإبلاغ عن منطقة متسخة ---
 elif page == "🚨 Report a Dirty Area":
     st.markdown("## 🚨 Report a Dirty Area")
     
@@ -260,7 +234,6 @@ elif page == "🚨 Report a Dirty Area":
             st.success(f"Report {report_id} submitted successfully!")
 
 
-# --- صفحة لوحة الإحصائيات ---
 elif page == "📊 Analytics Dashboard":
     st.markdown("## 📊 Analytics Dashboard")
     
