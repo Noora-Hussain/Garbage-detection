@@ -12,8 +12,6 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-
-
 Garbage_Classes = ['Battery', 'Glass', 'Medical', 'Metal', 'Organic', 'Paper', 'Plastic', 'SmartPhone']
 
 
@@ -28,21 +26,15 @@ GARBAGE_DESCRIPTIONS = {
     "SmartPhone": "Old smartphones and electronics should be taken to an e-waste recycling facility or a certified trade-in center."
 }
 
-
-
-
 APP_FOLDER = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATH = os.path.join(APP_FOLDER, "best.pt")
 
-
-
 @st.cache_resource
 def load_model():
-    return YOLO(MODEL_PATH)
-
+    return YOLO(MODEL_PATH) # 
 
 def get_detections(result):
-    detections = []
+    detections = [] # 
 
     if result.boxes is None:
         return detections
@@ -50,13 +42,13 @@ def get_detections(result):
     for box in result.boxes:
         class_id = int(box.cls[0])
         confidence = float(box.conf[0])
-        x1, y1, x2, y2 = box.xyxy[0].tolist()
+        x1, y1, x2, y2 = box.xyxy[0].tolist() #
 
         detections.append({
             "Garbage": result.names[class_id],
             "Confidence": f"{confidence * 100:.1f}%",
             "Box": f"({x1:.0f}, {y1:.0f}) to ({x2:.0f}, {y2:.0f})"
-        })
+        })#
 
     return detections
 
@@ -64,7 +56,7 @@ def get_detections(result):
 def image_to_bytes(image):
     buffer = io.BytesIO()
     image.save(buffer, format="JPEG")
-    return buffer.getvalue()
+    return buffer.getvalue() # 
 
 
 def get_street_status(number_of_objects):
@@ -74,9 +66,12 @@ def get_street_status(number_of_objects):
         return "SOME GARBAGE", "Some garbage was detected on this street."
     else:
         return "NEEDS CLEANING", "Several garbage objects were detected. This area may need cleaning."
+        # 
 
 
-def show_detection_results(result, mode):
+def show_detection_results(result, mode, selected_area):
+    st.info(f"📍 Selected Area / Location: **{selected_area}**")
+    
     plotted_image = result.plot()[:, :, ::-1]
     annotated_image = Image.fromarray(plotted_image)
     detections = get_detections(result)
@@ -108,7 +103,7 @@ def show_detection_results(result, mode):
             st.write("No garbage was detected in this image.")
 
     st.markdown("## ♻️ Detected Garbage")
-
+# 
     if detections:
         detection_data = pd.DataFrame(detections)
         garbage_counts = detection_data["Garbage"].value_counts()
