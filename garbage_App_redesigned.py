@@ -8,6 +8,7 @@ import streamlit as st
 from PIL import Image
 from ultralytics import YOLO
 from datetime import datetime
+pip install streamlit-webrtc av
 
 try:
     from streamlit_webrtc import webrtc_streamer, VideoProcessorBase, RTCConfiguration
