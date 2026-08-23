@@ -68,7 +68,15 @@ def get_street_status(number_of_objects):
         return "NEEDS CLEANING", "Several garbage objects were detected. This area may need cleaning."
         # 
 
-
+def select_target_area(key_suffix):
+    main_areas = ["Manama", "Muharraq", "Riffa", "Isa Town", "Hamad Town", "Other"]
+    selected_main_area = st.selectbox("Select Area:", main_areas, key=f"area_select_{key_suffix}")
+    
+    if selected_main_area == "Other":
+        custom_area = st.text_input("Please enter the area name:", key=f"custom_area_{key_suffix}")
+        return custom_area if custom_area else "Unspecified"
+    return selected_main_area
+    
 def show_detection_results(result, mode, selected_area):
     st.info(f"📍 Selected Area / Location: **{selected_area}**")
     
