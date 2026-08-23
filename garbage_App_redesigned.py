@@ -1,5 +1,8 @@
 import io
 import os
+import tempfile
+import numpy as np
+import cv2
 import pandas as pd
 import streamlit as st
 from PIL import Image
@@ -77,6 +80,20 @@ def count_detected_objects(result):
         })
     return detections
 
+if WEBRTC_AVAILABLE:
+    class WasteVideoProcessor(VideoProcessorBase):
+        """Runs YOLO detection on each live-camera frame."""
+        def __init__(self):
+            self.model = load_my_model()
+            self.confidence = 0.25
+
+        def recv(self, frame):
+            img = frame.to_ndarray(format="bgr24")
+            res = self.model.predict(img, conf=self.confidence, verbose=False)[0]
+            annotated = res.plot()
+            return frame.from_ndarray(annotated, format="bgr24")
+
+
 def choose_area_menu(unique_key):
     areas = ["Manama", "Muharraq", "Riffa", "Isa Town", "Hamad Town", "Other"]
     selected = st.selectbox("Select Area:", areas, key=unique_key)
@@ -145,28 +162,106 @@ elif page == "🛣️ Street Detection":
     st.markdown("## 🛣️ Street Garbage Detection")
     st.write("Analyze street footage to detect waste presence.")
 
-    source_type = st.radio("Source", ["📷 Image", "🎞️ Video Upload", "🔴 Live Camera"], horizontal=True)
+    source_type = st.radio(
+        "Source",
+        ["📷 Image", "🎞️ Video Upload", "🔴 Live Camera"],
+        horizontal=True
+    )
 
-    if img_file is not None:
-        image = Image.open(img_file).convert("RGB")
-        st.session_state.current_image = image
+    # ---------- IMAGE ----------
+    if source_type == "📷 Image":
+        img_file = st.file_uploader("Upload Image", type=["jpg", "png", "jpeg"])
 
-        with st.spinner("AI is analyzing..."):
+        if img_file is not None:
+            image = Image.open(img_file).convert("RGB")
+            st.session_state.current_image = image
+
+            with st.spinner("AI is analyzing..."):
+                model = load_my_model()
+                res = model.predict(image, conf=confidence, verbose=False)[0]
+
+            col1, col2 = st.columns(2)
+            with col1:
+                st.image(image, caption="Original", use_container_width=True)
+            with col2:
+                st.image(res.plot()[:, :, ::-1], caption="AI Detection", use_container_width=True)
+
+            items = count_detected_objects(res)
+            if items:
+                st.warning(f"⚠️ Found {len(items)} garbage objects!")
+                st.dataframe(pd.DataFrame(items), use_container_width=True, hide_index=True)
+            else:
+                st.success("✅ Clean street! No garbage found.")
+
+    # ---------- VIDEO UPLOAD ----------
+    elif source_type == "🎞️ Video Upload":
+        video_file = st.file_uploader("Upload Video", type=["mp4", "mov", "avi", "mkv"])
+        frame_skip = st.slider("Analyze every Nth frame (higher = faster)", 1, 15, 5)
+
+        if video_file is not None:
+            # save to a temp file so cv2 can open it
+            tfile = tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(video_file.name)[1])
+            tfile.write(video_file.read())
+            tfile.close()
+
             model = load_my_model()
-            res = model.predict(image, conf=confidence, verbose=False)[0]
+            cap = cv2.VideoCapture(tfile.name)
+            total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
-        col1, col2 = st.columns(2)
-        with col1:
-            st.image(image, caption="Original", use_container_width=True)
-        with col2:
-            st.image(res.plot()[:, :, ::-1], caption="AI Detection", use_container_width=True)
+            frame_placeholder = st.empty()
+            progress_bar = st.progress(0)
+            all_detections = []
+            frame_idx = 0
 
-        items = count_detected_objects(res)
-        if items:
-            st.warning(f"⚠️ Found {len(items)} garbage objects!")
-            st.dataframe(pd.DataFrame(items), use_container_width=True, hide_index=True)
+            stop_btn = st.button("⏹️ Stop")
+
+            while cap.isOpened():
+                ret, frame = cap.read()
+                if not ret or stop_btn:
+                    break
+
+                if frame_idx % frame_skip == 0:
+                    res = model.predict(frame, conf=confidence, verbose=False)[0]
+                    annotated = res.plot()
+                    frame_placeholder.image(annotated[:, :, ::-1], caption=f"Frame {frame_idx}", use_container_width=True)
+                    all_detections.extend(count_detected_objects(res))
+
+                frame_idx += 1
+                if total_frames > 0:
+                    progress_bar.progress(min(frame_idx / total_frames, 1.0))
+
+            cap.release()
+            os.unlink(tfile.name)
+            progress_bar.empty()
+
+            st.markdown("---")
+            if all_detections:
+                st.warning(f"⚠️ Found {len(all_detections)} garbage detections across analyzed frames!")
+                summary = pd.DataFrame(all_detections)["Garbage"].value_counts().reset_index()
+                summary.columns = ["Garbage", "Count"]
+                st.dataframe(summary, use_container_width=True, hide_index=True)
+            else:
+                st.success("✅ Clean footage! No garbage found.")
+
+    # ---------- LIVE CAMERA ----------
+    elif source_type == "🔴 Live Camera":
+        if not WEBRTC_AVAILABLE:
+            st.error(
+                "Live camera requires the `streamlit-webrtc` package. "
+                "Install it with: `pip install streamlit-webrtc av`"
+            )
         else:
-            st.success("✅ Clean street! No garbage found.")
+            st.info("Allow camera access in your browser, then wait a moment for the stream to start.")
+            webrtc_ctx = webrtc_streamer(
+                key="street-live-detection",
+                video_processor_factory=WasteVideoProcessor,
+                rtc_configuration=RTCConfiguration(
+                    {"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]}
+                ),
+                media_stream_constraints={"video": True, "audio": False},
+            )
+            if webrtc_ctx.video_processor:
+                webrtc_ctx.video_processor.confidence = confidence
 
 
 elif page == "♻️ Waste Assistant":
