@@ -143,9 +143,9 @@ if page == "🏠 Home":
 
 elif page == "🛣️ Street Detection":
     st.markdown("## 🛣️ Street Garbage Detection")
-    st.write("Upload a street image to let the AI analyze waste presence.")
+    st.write("Analyze street footage to detect waste presence.")
 
-    img_file = st.file_uploader("Upload Image", type=["jpg", "png", "jpeg"])
+    source_type = st.radio("Source", ["📷 Image", "🎞️ Video Upload", "🔴 Live Camera"], horizontal=True)
 
     if img_file is not None:
         image = Image.open(img_file).convert("RGB")
