@@ -70,7 +70,7 @@ def get_street_status(number_of_objects):
 
 
 # =========================================================
-# HELPER FUNCTION FOR AREA SELECTION
+# HELPER FUNCTION FOR AREA SELECTION (خاص بصفحة البلاغات فقط)
 # =========================================================
 def select_target_area(key_suffix):
     main_areas = ["Manama", "Muharraq", "Riffa", "Isa Town", "Hamad Town", "Other"]
@@ -82,9 +82,7 @@ def select_target_area(key_suffix):
     return selected_main_area
 
 
-def show_detection_results(result, mode, selected_area):
-    st.info(f"📍 Selected Area / Location: **{selected_area}**")
-    
+def show_detection_results(result, mode):
     plotted_image = result.plot()[:, :, ::-1]
     annotated_image = Image.fromarray(plotted_image)
     detections = get_detections(result)
@@ -320,16 +318,14 @@ if page == "🏠 Home":
     """, unsafe_allow_html=True)
 
 
-# STREET DETECTION
+# STREET DETECTION (بدون اختيار منطقة)
 elif page == "🛣️ Street Detection":
 
     st.markdown("## 🛣️ Street Garbage Detection")
     st.write(
-        "Select the area, upload a street image, and the AI will detect garbage objects, "
+        "Upload a street image and the AI will detect garbage objects, "
         "show their locations, and estimate the cleanliness status."
     )
-
-    selected_area = select_target_area("street")
 
     image_file = st.file_uploader(
         "Upload a street image",
@@ -358,8 +354,7 @@ elif page == "🛣️ Street Detection":
 
                 show_detection_results(
                     result,
-                    "Street Detection",
-                    selected_area
+                    "Street Detection"
                 )
 
             except Exception as error:
@@ -368,16 +363,14 @@ elif page == "🛣️ Street Detection":
                 )
 
 
-# WASTE ASSISTANT
+# WASTE ASSISTANT (بدون اختيار منطقة)
 elif page == "♻️ Waste Assistant":
 
     st.markdown("## ♻️ Personal Waste Assistant")
     st.write(
-        "Select the area, take a photo or upload an image of a waste item. "
+        "Take a photo or upload an image of a waste item. "
         "EcoVision will identify the item and tell you how to dispose of it."
     )
-
-    selected_area = select_target_area("assistant")
 
     source = st.radio(
         "Choose image source",
@@ -417,8 +410,7 @@ elif page == "♻️ Waste Assistant":
 
                 show_detection_results(
                     result,
-                    "Waste Assistant",
-                    selected_area
+                    "Waste Assistant"
                 )
 
             except Exception as error:
@@ -428,7 +420,7 @@ elif page == "♻️ Waste Assistant":
 
 
 # =========================================================
-# REPORT A DIRTY AREA PAGE
+# REPORT A DIRTY AREA PAGE (مع اختيار المنطقة والبلاغات)
 # =========================================================
 elif page == "🚨 Report a Dirty Area":
 
@@ -438,7 +430,7 @@ elif page == "🚨 Report a Dirty Area":
         "let the AI analyze it, and submit your official report."
     )
 
-    # 1. تحديد الموقع
+    # 1. تحديد الموقع (موجود هنا فقط)
     selected_area = select_target_area("report")
 
     # 2. تصوير / رفع المكان
@@ -491,7 +483,7 @@ elif page == "🚨 Report a Dirty Area":
                     priority = "🟢 Low Priority"
 
                 current_date = datetime.now().strftime("%d %b %Y")
-                report_id = "Report #1024"  # يمكنك جعلها ديناميكية لاحقاً
+                report_id = "Report #1024"
 
                 st.markdown("---")
                 st.markdown("### 📋 Report Preview")
@@ -510,9 +502,6 @@ elif page == "🚨 Report a Dirty Area":
                 st.markdown("---")
                 if st.button("🚀 Submit Report", type="primary"):
                     st.success(f"✅ Your report (**{report_id}**) for **{selected_area}** has been successfully submitted! Thank you for helping clean the community.")
-                    
-                    # يمكنك هنا لاحقاً إضافة كود لحفظ تفاصيل البلاغ في ملف CSV أو قاعدة بيانات
-                    # report_data = {"ID": report_id, "Area": selected_area, "Objects": num_objects, "Priority": priority, "Date": current_date}
 
             except Exception as error:
                 st.error(
