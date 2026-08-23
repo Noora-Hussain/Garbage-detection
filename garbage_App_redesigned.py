@@ -54,7 +54,6 @@ APP_FOLDER = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATH = os.path.join(APP_FOLDER, "best.pt")
 
 
-
 @st.cache_resource
 def load_my_model():
     return YOLO(MODEL_PATH)
