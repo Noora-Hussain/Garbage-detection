@@ -5,10 +5,6 @@ import streamlit as st
 from PIL import Image
 from ultralytics import YOLO
 
-
-# =========================================================
-# PAGE CONFIGURATION
-# =========================================================
 st.set_page_config(
     page_title="EcoVision | Smart Waste Detection",
     page_icon="♻️",
@@ -17,38 +13,34 @@ st.set_page_config(
 )
 
 
-# =========================================================
-# GARBAGE CLASSES & DISPOSAL INFORMATION
-# =========================================================
-Garbage_Classes = ["Glass", "Metal", "Paper", "Plastic", "Waste"]
+
+Garbage_Classes = ['Battery', 'Glass', 'Medical', 'Metal', 'Organic', 'Paper', 'Plastic', 'SmartPhone']
+
 
 GARBAGE_DESCRIPTIONS = {
+    "Battery": "Do not throw batteries in regular trash. Take them to a specialized battery recycling drop-off point.",
     "Glass": "Place clean and unbroken glass in the designated glass recycling container.",
+    "Medical": "Dispose of medical waste and pharmaceuticals safely in designated biohazard or pharmacy-takeback bins.",
     "Metal": "Empty metal cans and packaging, then place them in the metal recycling bin.",
+    "Organic": "Compost food scraps and organic waste in an organic bin or composting system.",
     "Paper": "Keep paper clean and dry, then place it in the designated paper recycling bin.",
     "Plastic": "Rinse plastic bottles and containers when possible, then place them in the plastic recycling bin.",
-    "Waste": "General waste should be placed in the general waste bin."
+    "SmartPhone": "Old smartphones and electronics should be taken to an e-waste recycling facility or a certified trade-in center."
 }
 
 
-# =========================================================
-# MODEL PATH
-# =========================================================
+
+
 APP_FOLDER = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATH = os.path.join(APP_FOLDER, "best.pt")
 
 
-# =========================================================
-# LOAD MODEL
-# =========================================================
+
 @st.cache_resource
 def load_model():
     return YOLO(MODEL_PATH)
 
 
-# =========================================================
-# DETECTION FUNCTIONS
-# =========================================================
 def get_detections(result):
     detections = []
 
@@ -160,9 +152,6 @@ def show_detection_results(result, mode):
         )
 
 
-# =========================================================
-# CUSTOM DESIGN
-# =========================================================
 st.markdown("""
 <style>
     .stApp {
@@ -231,9 +220,6 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
-# =========================================================
-# SIDEBAR
-# =========================================================
 with st.sidebar:
     st.markdown("## ♻️ EcoVision")
     st.caption("AI-Powered Smart Waste Detection")
@@ -268,9 +254,8 @@ with st.sidebar:
         st.write(f"• {garbage}")
 
 
-# =========================================================
 # HOME PAGE
-# =========================================================
+
 if page == "🏠 Home":
 
     st.markdown("""
@@ -326,9 +311,7 @@ if page == "🏠 Home":
     """, unsafe_allow_html=True)
 
 
-# =========================================================
 # STREET DETECTION
-# =========================================================
 elif page == "🛣️ Street Detection":
 
     st.markdown("## 🛣️ Street Garbage Detection")
@@ -373,9 +356,7 @@ elif page == "🛣️ Street Detection":
                 )
 
 
-# =========================================================
 # WASTE ASSISTANT
-# =========================================================
 elif page == "♻️ Waste Assistant":
 
     st.markdown("## ♻️ Personal Waste Assistant")
