@@ -302,7 +302,7 @@ if page == "🏠 Home":
     cols = st.columns(len(Garbage_Classes))
 
     for index, garbage in enumerate(Garbage_Classes):
-        cols[index].metric(garbage, "AI Class")
+        cols[index].markdown(f"**{garbage}**")
 
     st.markdown("""
     <div class="footer">
