@@ -9,6 +9,12 @@ from PIL import Image
 from ultralytics import YOLO
 from datetime import datetime
 
+try:
+    from streamlit_webrtc import webrtc_streamer, VideoProcessorBase, RTCConfiguration
+    WEBRTC_AVAILABLE = True
+except ImportError:
+    WEBRTC_AVAILABLE = False
+
 # 1. إعدادات الصفحة والتصميم (CSS Styles)
 st.set_page_config(
     page_title="EcoVision | Smart Waste Detection",
