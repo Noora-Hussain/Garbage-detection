@@ -70,7 +70,7 @@ def get_street_status(number_of_objects):
 
 
 # =========================================================
-# HELPER FUNCTION FOR AREA SELECTION (خاص بصفحة البلاغات فقط)
+# HELPER FUNCTION FOR AREA SELECTION
 # =========================================================
 def select_target_area(key_suffix):
     main_areas = ["Manama", "Muharraq", "Riffa", "Isa Town", "Hamad Town", "Other"]
@@ -238,7 +238,8 @@ with st.sidebar:
             "🏠 Home",
             "🛣️ Street Detection",
             "♻️ Waste Assistant",
-            "🚨 Report a Dirty Area"
+            "🚨 Report a Dirty Area",
+            "📊 Analytics Dashboard"
         ]
     )
 
@@ -318,7 +319,7 @@ if page == "🏠 Home":
     """, unsafe_allow_html=True)
 
 
-# STREET DETECTION (بدون اختيار منطقة)
+# STREET DETECTION
 elif page == "🛣️ Street Detection":
 
     st.markdown("## 🛣️ Street Garbage Detection")
@@ -363,7 +364,7 @@ elif page == "🛣️ Street Detection":
                 )
 
 
-# WASTE ASSISTANT (بدون اختيار منطقة)
+# WASTE ASSISTANT
 elif page == "♻️ Waste Assistant":
 
     st.markdown("## ♻️ Personal Waste Assistant")
@@ -420,7 +421,7 @@ elif page == "♻️ Waste Assistant":
 
 
 # =========================================================
-# REPORT A DIRTY AREA PAGE (مع اختيار المنطقة والبلاغات)
+# REPORT A DIRTY AREA PAGE (مع ميزة تتبع الحالة)
 # =========================================================
 elif page == "🚨 Report a Dirty Area":
 
@@ -430,10 +431,8 @@ elif page == "🚨 Report a Dirty Area":
         "let the AI analyze it, and submit your official report."
     )
 
-    # 1. تحديد الموقع (موجود هنا فقط)
     selected_area = select_target_area("report")
 
-    # 2. تصوير / رفع المكان
     report_source = st.radio(
         "Choose image source for report",
         ["Upload Image", "Use Camera"],
@@ -474,7 +473,6 @@ elif page == "🚨 Report a Dirty Area":
                 detections = get_detections(result)
                 num_objects = len(detections)
 
-                # تحديد الأولوية بناءً على عدد القطع المكتشفة
                 if num_objects > 5:
                     priority = "🔴 High Priority"
                 elif num_objects > 2:
@@ -483,7 +481,7 @@ elif page == "🚨 Report a Dirty Area":
                     priority = "🟢 Low Priority"
 
                 current_date = datetime.now().strftime("%d %b %Y")
-                report_id = "Report #1024"
+                report_id = "Report #1025"
 
                 st.markdown("---")
                 st.markdown("### 📋 Report Preview")
@@ -497,13 +495,46 @@ elif page == "🚨 Report a Dirty Area":
                     st.markdown(f"🗑️ **Garbage Objects:** {num_objects} detected")
                     st.markdown(f"⚡ **Priority:** {priority}")
                     st.markdown(f"📅 **Date:** {current_date}")
+                    st.markdown(f"🔄 **Status:** 🟡 Pending Review") # ميزة تتبع الحالة
 
-                # 3. زر Submit
                 st.markdown("---")
                 if st.button("🚀 Submit Report", type="primary"):
-                    st.success(f"✅ Your report (**{report_id}**) for **{selected_area}** has been successfully submitted! Thank you for helping clean the community.")
+                    st.success(f"✅ Your report (**{report_id}**) for **{selected_area}** has been successfully submitted! Status: **Pending Review**.")
 
             except Exception as error:
                 st.error(
                     f"Could not process the report image: {error}"
                 )
+
+
+# =========================================================
+# ANALYTICS DASHBOARD PAGE (لوحة التحكم والإحصائيات كصفحة أخيرة)
+# =========================================================
+elif page == "📊 Analytics Dashboard":
+
+    st.markdown("## 📊 Waste Management Analytics Dashboard")
+    st.write("Overview of simulated municipal reports, waste distribution, and cleaning priorities across regions.")
+
+    # مؤشرات عامة (Metrics)
+    col1, col2, col3, col4 = st.columns(4)
+    col1.metric("Total Reports", "142", "+12 this week")
+    col2.metric("Resolved Areas", "98", "68.8%")
+    col3.metric("Pending Cleanup", "44", "Active")
+    col4.metric("Top Waste Type", "Plastic", "35%")
+
+    st.markdown("---")
+
+    # بيانات تجريبية للإحصائيات
+    st.markdown("### 📈 Reports by Area")
+    area_data = pd.DataFrame({
+        "Area": ["Manama", "Muharraq", "Riffa", "Isa Town", "Hamad Town"],
+        "Reports Count": [45, 30, 25, 22, 20]
+    })
+    st.bar_chart(area_data.set_index("Area"))
+
+    st.markdown("### ♻️ Waste Distribution Breakdown")
+    waste_dist = pd.DataFrame({
+        "Waste Type": ["Plastic", "Organic", "Metal", "Glass", "Paper", "Battery"],
+        "Percentage (%)": [35, 25, 15, 10, 10, 5]
+    })
+    st.dataframe(waste_dist, use_container_width=True, hide_index=True)
