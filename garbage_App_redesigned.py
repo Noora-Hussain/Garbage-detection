@@ -9,12 +9,6 @@ from PIL import Image
 from ultralytics import YOLO
 from datetime import datetime
 
-try:
-    from streamlit_webrtc import webrtc_streamer, VideoProcessorBase, RTCConfiguration
-    WEBRTC_AVAILABLE = True
-except ImportError:
-    WEBRTC_AVAILABLE = False
-
 # 1. إعدادات الصفحة والتصميم (CSS Styles)
 st.set_page_config(
     page_title="EcoVision | Smart Waste Detection",
@@ -86,20 +80,6 @@ def count_detected_objects(result):
         })
     return detections
 
-if WEBRTC_AVAILABLE:
-    class WasteVideoProcessor(VideoProcessorBase):
-        """Runs YOLO detection on each live-camera frame."""
-        def __init__(self):
-            self.model = load_my_model()
-            self.confidence = 0.25
-
-        def recv(self, frame):
-            img = frame.to_ndarray(format="bgr24")
-            res = self.model.predict(img, conf=self.confidence, verbose=False)[0]
-            annotated = res.plot()
-            return frame.from_ndarray(annotated, format="bgr24")
-
-
 def choose_area_menu(unique_key):
     areas = ["Manama", "Muharraq", "Riffa", "Isa Town", "Hamad Town", "Other"]
     selected = st.selectbox("Select Area:", areas, key=unique_key)
@@ -170,7 +150,7 @@ elif page == "🛣️ Street Detection":
 
     source_type = st.radio(
         "Source",
-        ["📷 Image", "🎞️ Video Upload", "🔴 Live Camera"],
+        ["📷 Image", "🎞️ Video Upload"],
         horizontal=True
     )
 
@@ -248,26 +228,6 @@ elif page == "🛣️ Street Detection":
                 st.dataframe(summary, use_container_width=True, hide_index=True)
             else:
                 st.success("✅ Clean footage! No garbage found.")
-
-    # ---------- LIVE CAMERA ----------
-    elif source_type == "🔴 Live Camera":
-        if not WEBRTC_AVAILABLE:
-            st.error(
-                "Live camera requires the `streamlit-webrtc` package. "
-                "Install it with: `pip install streamlit-webrtc av`"
-            )
-        else:
-            st.info("Allow camera access in your browser, then wait a moment for the stream to start.")
-            webrtc_ctx = webrtc_streamer(
-                key="street-live-detection",
-                video_processor_factory=WasteVideoProcessor,
-                rtc_configuration=RTCConfiguration(
-                    {"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]}
-                ),
-                media_stream_constraints={"video": True, "audio": False},
-            )
-            if webrtc_ctx.video_processor:
-                webrtc_ctx.video_processor.confidence = confidence
 
 
 elif page == "♻️ Waste Assistant":
