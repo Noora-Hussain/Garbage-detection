@@ -9,7 +9,7 @@ from PIL import Image
 from ultralytics import YOLO
 from datetime import datetime
 
-st.set_page_config(page_title="EcoVision | Smart Waste Detection",page_icon="♻️",layout="wide",initial_sidebar_state="expanded")
+st.set_page_config(page_title="EcoVision | Smart Waste Detection", page_icon="♻️", layout="wide", initial_sidebar_state="expanded")
 
 st.markdown("""
 <style>
@@ -27,12 +27,11 @@ st.markdown("""
         border: 1px solid #DDE7E1; min-height: 150px; margin-bottom: 15px;
     }
     .feature-card h3 { color: #18352B; }
-    .section-title { color: #18352B; font-size: 28px; font-weight: 700; margin-top: 15px; }
+    .section-title { color: #18352B; font-size: 28px; font-weight: 700; margin-top: 15px; margin-bottom: 15px; }
     div.stButton > button { border-radius: 12px; border: 1px solid #2F6B4F; font-weight: 600; }
     .footer { text-align: center; color: #718078; margin-top: 45px; padding: 20px; }
 </style>
 """, unsafe_allow_html=True)
-
 
 GARBAGE_DESCRIPTIONS = {
     "Glass": "Place in the designated glass recycling container.",
@@ -40,7 +39,7 @@ GARBAGE_DESCRIPTIONS = {
     "Paper": "Place in the designated paper recycling bin.",
     "Plastic": "Place in the plastic recycling bin.",
     "General Waste": "Place in the general waste bin for non-recyclable items.",
-} # GARBAGE DESCRIPTIONS about classes
+}
 
 APP_FOLDER = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATH = os.path.join(APP_FOLDER, "best.pt")
@@ -57,7 +56,7 @@ def count_detected_objects(result):
     for box in result.boxes:
         class_id = int(box.cls[0])
         conf = float(box.conf[0])
-        detections.append({"Garbage": result.names[class_id],"Confidence": f"{conf * 100:.1f}%"})
+        detections.append({"Garbage": result.names[class_id], "Confidence": f"{conf * 100:.1f}%"})
     return detections
 
 def choose_area_menu(unique_key):
@@ -68,7 +67,6 @@ def choose_area_menu(unique_key):
         custom = st.text_input("Enter area name:", key=f"custom_{unique_key}")
         return custom if custom else "Unspecified"
     return selected
-
 
 if "reports_list" not in st.session_state:
     st.session_state.reports_list = [
@@ -83,12 +81,13 @@ with st.sidebar:
 
     page = st.radio(
         "Navigation",
-        ["🏠 Home","🛣️ Street Detection","♻️ Waste Assistant","🚨 Report a Dirty Area","📊 Analytics Dashboard"]
+        ["🏠 Home", "🛣️ Street Detection", "♻️ Waste Assistant", "🚨 Report a Dirty Area", "📊 Analytics Dashboard"]
     )
 
     st.markdown("---")
     confidence = st.slider("AI Confidence", 0.10, 0.90, 0.25, 0.05)
 
+# ==================== HOME PAGE ====================
 if page == "🏠 Home":
     st.markdown("""
     <div class="hero">
@@ -98,23 +97,42 @@ if page == "🏠 Home":
     """, unsafe_allow_html=True)
 
     st.markdown('<div class="section-title">Features</div>', unsafe_allow_html=True)
+    
+    # Row 1
     c1, c2 = st.columns(2)
     with c1:
         st.markdown("""
         <div class="feature-card">
             <h3>🛣️ Street Detection</h3>
-            <p>Analyze street images to detect garbage and check cleanliness.</p>
+            <p>Analyze street images and live video footage to detect waste presence and evaluate cleanliness levels.</p>
         </div>
         """, unsafe_allow_html=True)
     with c2:
         st.markdown("""
         <div class="feature-card">
             <h3>♻️ Waste Assistant</h3>
-            <p>Classify individual items and get recycling instructions.</p>
+            <p>Classify individual waste items via photo or camera and receive immediate recycling recommendations.</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+    # Row 2
+    c3, c4 = st.columns(2)
+    with c3:
+        st.markdown("""
+        <div class="feature-card">
+            <h3>🚨 Report a Dirty Area</h3>
+            <p>Submit photos of polluted areas with automatic AI object count and priority level assignment.</p>
+        </div>
+        """, unsafe_allow_html=True)
+    with c4:
+        st.markdown("""
+        <div class="feature-card">
+            <h3>📊 Analytics Dashboard</h3>
+            <p>Track regional clean-up statistics, total reports, resolution progress, and active area distributions.</p>
         </div>
         """, unsafe_allow_html=True)
 
-
+# ==================== STREET DETECTION ====================
 elif page == "🛣️ Street Detection":
     st.markdown("## 🛣️ Street Garbage Detection")
     st.write("Analyze street footage to detect waste presence.")
@@ -125,7 +143,6 @@ elif page == "🛣️ Street Detection":
         horizontal=True
     )
 
-    # IMAGE 
     if source_type == "📷 Image":
         img_file = st.file_uploader("Upload Image", type=["jpg", "png", "jpeg"])
 
@@ -150,13 +167,11 @@ elif page == "🛣️ Street Detection":
             else:
                 st.success("✅ Clean street! No garbage found.")
 
-    # VIDEO UPLOAD 
     elif source_type == "🎞️ Video Upload":
         video_file = st.file_uploader("Upload Video", type=["mp4", "mov", "avi", "mkv"])
         frame_skip = st.slider("Analyze every Nth frame (higher = faster)", 1, 15, 5)
 
         if video_file is not None:
-            # save to a temp file so cv2 can open it
             tfile = tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(video_file.name)[1])
             tfile.write(video_file.read())
             tfile.close()
@@ -200,7 +215,7 @@ elif page == "🛣️ Street Detection":
             else:
                 st.success("✅ Clean footage! No garbage found.")
 
-
+# ==================== WASTE ASSISTANT ====================
 elif page == "♻️ Waste Assistant":
     st.markdown("## ♻️ Personal Waste Assistant")
     
@@ -224,7 +239,7 @@ elif page == "♻️ Waste Assistant":
         else:
             st.warning("No item recognized.")
 
-
+# ==================== REPORT DIRTY AREA ====================
 elif page == "🚨 Report a Dirty Area":
     st.markdown("## 🚨 Report a Dirty Area")
     
@@ -264,7 +279,7 @@ elif page == "🚨 Report a Dirty Area":
             st.session_state.reports_list.append(new_rep)
             st.success(f"Report {report_id} submitted successfully!")
 
-
+# ==================== ANALYTICS DASHBOARD ====================
 elif page == "📊 Analytics Dashboard":
     st.markdown("## 📊 Analytics Dashboard")
     
