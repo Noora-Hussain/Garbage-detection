@@ -175,22 +175,6 @@ elif page == "🛣️ Street Detection":
             tfile.write(video_file.read())
             tfile.close()
 
-            model = load_my_model()
-            cap = cv2.VideoCapture(tfile.name)
-            total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-
-            frame_placeholder = st.empty()
-            progress_bar = st.progress(0)
-            all_detections = []
-            frame_idx = 0
-
-            stop_btn = st.button("⏹️ Stop")
-
-            while cap.isOpened():
-                ret, frame = cap.read()
-                if not ret or stop_btn:
-                    break
-
                 if frame_idx % frame_skip == 0:
                     res = model.predict(frame, conf=confidence, verbose=False)[0]
                     annotated = res.plot()
