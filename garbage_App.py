@@ -175,20 +175,7 @@ elif page == "🛣️ Street Detection":
             tfile.write(video_file.read())
             tfile.close()
 
-                if frame_idx % frame_skip == 0:
-                    res = model.predict(frame, conf=confidence, verbose=False)[0]
-                    annotated = res.plot()
-                    frame_placeholder.image(annotated[:, :, ::-1], caption=f"Frame {frame_idx}", use_container_width=True)
-                    all_detections.extend(count_detected_objects(res))
-
-                frame_idx += 1
-                if total_frames > 0:
-                    progress_bar.progress(min(frame_idx / total_frames, 1.0))
-
-            cap.release()
-            os.unlink(tfile.name)
-            progress_bar.empty()
-
+            
             st.markdown("---")
             if all_detections:
                 st.warning(f"⚠️ Found {len(all_detections)} garbage detections across analyzed frames!")
