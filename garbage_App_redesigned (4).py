@@ -40,14 +40,11 @@ st.markdown("""
 
 
 GARBAGE_DESCRIPTIONS = {
-    "Battery": "Take to a specialized battery recycling drop-off point.",
     "Glass": "Place in the designated glass recycling container.",
-    "Medical": "Dispose safely in biohazard or pharmacy-takeback bins.",
     "Metal": "Place in the metal recycling bin.",
-    "Organic": "Compost food scraps and organic waste.",
     "Paper": "Place in the designated paper recycling bin.",
     "Plastic": "Place in the plastic recycling bin.",
-    "SmartPhone": "Take to an e-waste recycling facility."
+    "General Waste": "Place in the general waste bin for non-recyclable items.",
 } # GARBAGE DESCRIPTIONS about classes
 
 APP_FOLDER = os.path.dirname(os.path.abspath(__file__))
