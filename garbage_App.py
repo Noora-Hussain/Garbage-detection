@@ -98,7 +98,6 @@ if page == "🏠 Home":
 
     st.markdown('<div class="section-title">Features</div>', unsafe_allow_html=True)
     
-    # Row 1
     c1, c2 = st.columns(2)
     with c1:
         st.markdown("""
@@ -115,7 +114,7 @@ if page == "🏠 Home":
         </div>
         """, unsafe_allow_html=True)
         
-    # Row 2
+
     c3, c4 = st.columns(2)
     with c3:
         st.markdown("""
