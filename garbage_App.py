@@ -9,12 +9,7 @@ from PIL import Image
 from ultralytics import YOLO
 from datetime import datetime
 
-st.set_page_config(
-    page_title="EcoVision | Smart Waste Detection",
-    page_icon="♻️",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
+st.set_page_config(page_title="EcoVision | Smart Waste Detection",page_icon="♻️",layout="wide",initial_sidebar_state="expanded")
 
 st.markdown("""
 <style>
@@ -62,10 +57,7 @@ def count_detected_objects(result):
     for box in result.boxes:
         class_id = int(box.cls[0])
         conf = float(box.conf[0])
-        detections.append({
-            "Garbage": result.names[class_id],
-            "Confidence": f"{conf * 100:.1f}%"
-        })
+        detections.append({"Garbage": result.names[class_id],"Confidence": f"{conf * 100:.1f}%"})
     return detections
 
 def choose_area_menu(unique_key):
@@ -80,10 +72,9 @@ def choose_area_menu(unique_key):
 
 if "reports_list" not in st.session_state:
     st.session_state.reports_list = [
-        {"ID": "Report #1021", "Area": "Manama", "Objects": 4, "Priority": "🟠 Medium", "Date": "20 Aug 2026", "Status": "Resolved"},
-        {"ID": "Report #1022", "Area": "Muharraq", "Objects": 6, "Priority": "🔴 High", "Date": "21 Aug 2026", "Status": "Pending Review"}
+        {"ID": "Report #1", "Area": "Manama", "Objects": 4, "Priority": "🟠 Medium", "Date": "20 Aug 2026", "Status": "Resolved"},
+        {"ID": "Report #2", "Area": "Muharraq", "Objects": 6, "Priority": "🔴 High", "Date": "21 Aug 2026", "Status": "Pending Review"}
     ]
-
 
 with st.sidebar:
     st.markdown("## ♻️ EcoVision")
@@ -92,19 +83,11 @@ with st.sidebar:
 
     page = st.radio(
         "Navigation",
-        [
-            "🏠 Home",
-            "🛣️ Street Detection",
-            "♻️ Waste Assistant",
-            "🚨 Report a Dirty Area",
-            "📊 Analytics Dashboard"
-        ]
+        ["🏠 Home","🛣️ Street Detection","♻️ Waste Assistant","🚨 Report a Dirty Area","📊 Analytics Dashboard"]
     )
 
     st.markdown("---")
     confidence = st.slider("AI Confidence", 0.10, 0.90, 0.25, 0.05)
-
-
 
 if page == "🏠 Home":
     st.markdown("""
@@ -142,7 +125,7 @@ elif page == "🛣️ Street Detection":
         horizontal=True
     )
 
-    # ---------- IMAGE ----------
+    # IMAGE 
     if source_type == "📷 Image":
         img_file = st.file_uploader("Upload Image", type=["jpg", "png", "jpeg"])
 
@@ -167,7 +150,7 @@ elif page == "🛣️ Street Detection":
             else:
                 st.success("✅ Clean street! No garbage found.")
 
-    # ---------- VIDEO UPLOAD ----------
+    # VIDEO UPLOAD 
     elif source_type == "🎞️ Video Upload":
         video_file = st.file_uploader("Upload Video", type=["mp4", "mov", "avi", "mkv"])
         frame_skip = st.slider("Analyze every Nth frame (higher = faster)", 1, 15, 5)
