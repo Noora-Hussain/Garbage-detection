@@ -87,7 +87,7 @@ with st.sidebar:
     st.markdown("---")
     confidence = st.slider("AI Confidence", 0.10, 0.90, 0.25, 0.05)
 
-# ==================== HOME PAGE ====================
+# HOME PAGE 
 if page == "🏠 Home":
     st.markdown("""
     <div class="hero">
@@ -131,7 +131,7 @@ if page == "🏠 Home":
         </div>
         """, unsafe_allow_html=True)
 
-# ==================== STREET DETECTION ====================
+# STREET DETECTION 
 elif page == "🛣️ Street Detection":
     st.markdown("## 🛣️ Street Garbage Detection")
     st.write("Analyze street footage to detect waste presence.")
@@ -168,14 +168,47 @@ elif page == "🛣️ Street Detection":
 
     elif source_type == "🎞️ Video Upload":
         video_file = st.file_uploader("Upload Video", type=["mp4", "mov", "avi", "mkv"])
-        frame_skip = st.slider("Analyze every Nth frame (higher = faster)", 1, 15, 5)
+        frame_skip = 5  # تحليل كافي ومستمر لتسريع المعالجة دون الحاجة لشريط سحب
 
         if video_file is not None:
             tfile = tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(video_file.name)[1])
             tfile.write(video_file.read())
             tfile.close()
 
-            
+            all_detections = []
+            cap = cv2.VideoCapture(tfile.name)
+            total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+            frame_count = 0
+
+            st_frame = st.empty()
+            progress_bar = st.progress(0)
+            model = load_my_model()
+
+            with st.spinner("Processing video..."):
+                while cap.isOpened():
+                    ret, frame = cap.read()
+                    if not ret:
+                        break
+
+                    frame_count += 1
+                    if frame_count % frame_skip != 0:
+                        continue
+
+                    frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                    res = model.predict(frame_rgb, conf=confidence, verbose=False)[0]
+
+                    items = count_detected_objects(res)
+                    all_detections.extend(items)
+
+                    annotated_frame = res.plot()
+                    st_frame.image(annotated_frame[:, :, ::-1], caption=f"Analyzing Frame {frame_count}", use_container_width=True)
+
+                    if total_frames > 0:
+                        progress_bar.progress(min(frame_count / total_frames, 1.0))
+
+            cap.release()
+            os.unlink(tfile.name)
+
             st.markdown("---")
             if all_detections:
                 st.warning(f"⚠️ Found {len(all_detections)} garbage detections across analyzed frames!")
@@ -185,7 +218,7 @@ elif page == "🛣️ Street Detection":
             else:
                 st.success("✅ Clean footage! No garbage found.")
 
-# ==================== WASTE ASSISTANT ====================
+# WASTE ASSISTANT 
 elif page == "♻️ Waste Assistant":
     st.markdown("## ♻️ Personal Waste Assistant")
     
@@ -209,7 +242,7 @@ elif page == "♻️ Waste Assistant":
         else:
             st.warning("No item recognized.")
 
-# ==================== REPORT DIRTY AREA ====================
+# REPORT DIRTY AREA 
 elif page == "🚨 Report a Dirty Area":
     st.markdown("## 🚨 Report a Dirty Area")
     
@@ -249,7 +282,7 @@ elif page == "🚨 Report a Dirty Area":
             st.session_state.reports_list.append(new_rep)
             st.success(f"Report {report_id} submitted successfully!")
 
-# ==================== ANALYTICS DASHBOARD ====================
+# ANALYTICS DASHBOARD 
 elif page == "📊 Analytics Dashboard":
     st.markdown("## 📊 Analytics Dashboard")
     
