@@ -229,28 +229,32 @@ elif page == "🛣️ Street Detection":
                 st.success("✅ Clean footage! No garbage found.")
                 
 elif source_type == "🎥 Live Stream":
-        st.markdown("### 🎥 Real-Time Live Detection")
+    st.markdown("### 🎥 Real-Time Live Detection")
+
+    run = st.toggle("Start Camera")
+    frame_window = st.empty()
+
+    if run:
+      cap = cv2.VideoCapture(0)
+      model = load_my_model()
+
+      while run:
+        ret, frame = cap.read()
+        if not ret:
+          st.error("الكاميرا غير متصلة أو لا يمكن الوصول إليها!")
+          break
+
+        frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        res = model.predict(frame_rgb, conf=confidence, verbose=False)[0]
+
+        frame_window.image(
+            res.plot()[:, :, ::-1],
+            caption="Live Feed",
+            use_container_width=True,
+        )
+
+      cap.release()
         
-        run = st.toggle("Start Camera")
-        frame_window = st.empty()
-
-        if run:
-            cap = cv2.VideoCapture(0)
-            model = load_my_model()
-
-            while run:
-                ret, frame = cap.read()
-                if not ret:
-                    st.error("الكاميرا غير متصلة أو لا يمكن الوصول إليها!")
-                    break
-
-                frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                res = model.predict(frame_rgb, conf=confidence, verbose=False)[0]
-
-                frame_window.image(res.plot()[:, :, ::-1], caption="Live Feed", use_container_width=True)
-
-            cap.release()
-            
 # WASTE ASSISTANT 
 elif page == "♻️ Waste Assistant":
     st.markdown("## ♻️ Personal Waste Assistant")
