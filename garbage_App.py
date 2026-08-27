@@ -171,9 +171,9 @@ elif page == "🛣️ Street Detection":
     #    if img_file is not None:
      #       image = Image.open(img_file).convert("RGB")
 
-            with st.spinner("AI is analyzing..."):
-                model = load_my_model()
-                res = model.predict(image, conf=confidence, verbose=False)[0]
+           # with st.spinner("AI is analyzing..."):
+            #    model = load_my_model()
+             #   res = model.predict(image, conf=confidence, verbose=False)[0]
 
             col1, col2 = st.columns(2)
             with col1:
