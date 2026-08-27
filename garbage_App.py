@@ -1,4 +1,4 @@
-import io
+iimport io
 import os
 import tempfile
 import numpy as np
@@ -42,10 +42,10 @@ GARBAGE_DESCRIPTIONS = {
 }
 
 APP_FOLDER = os.path.dirname(os.path.abspath(__file__))
-MODEL_PATH = os.path.join(APP_FOLDER, "best.pt") # bestالوصول الى ملف ال 
+MODEL_PATH = os.path.join(APP_FOLDER, "best.pt")
 
 @st.cache_resource
-def load_my_model(): #  YOLO تحميل النموذج
+def load_my_model():
     return YOLO(MODEL_PATH)
 
 def count_detected_objects(result):
@@ -57,34 +57,39 @@ def count_detected_objects(result):
         class_id = int(box.cls[0])
         conf = float(box.conf[0])
         detections.append({"Garbage": result.names[class_id], "Confidence": f"{conf * 100:.1f}%"})
-    return detections # استخراج النتائج 
+    return detections
 
 def choose_area_menu(unique_key):
     areas = ["Manama", "Muharraq", "Riffa", "Isa Town", "Hamad Town", "Other"]
-    selected = st.selectbox("Select Area:", areas, key=unique_key) # نحديد اسماء المناطق
+    selected = st.selectbox("Select Area:", areas, key=unique_key)
     
     if selected == "Other":
         custom = st.text_input("Enter area name:", key=f"custom_{unique_key}")
         return custom if custom else "Unspecified"
-    return selected # إذا اختار المستخدم "Other"، يظهر له حقل نصي يدخل فيه اسم المنطقة يدوياً
+    return selected
 
+# ==========================================
+# 🆕 إضافة دوال الحفظ والتحميل من ملف CSV
+# ==========================================
 CSV_FILE = os.path.join(APP_FOLDER, "reports.csv")
 
 def load_reports():
+    """قراءة البلاغات من ملف CSV أو إنشاء ملف جديد إذا لم يكن موجوداً"""
     if os.path.exists(CSV_FILE):
         return pd.read_csv(CSV_FILE)
     else:
         initial_data = pd.DataFrame([
-            {"ID": "Report #1", "Area": "Manama", "Objects": 4, "Priority": "🟠 Medium", "Date": "20 Aug 2026", "Status": "Resolved"},
-            {"ID": "Report #2", "Area": "Muharraq", "Objects": 6, "Priority": "🔴 High", "Date": "21 Aug 2026", "Status": "Pending Review"}
-        ]) 
+            {"ID": "Report #1001", "Area": "Manama", "Objects": 4, "Priority": "🟠 Medium", "Date": "20 Aug 2026", "Status": "Resolved"},
+            {"ID": "Report #1002", "Area": "Muharraq", "Objects": 6, "Priority": "🔴 High", "Date": "21 Aug 2026", "Status": "Pending Review"}
+        ])
         initial_data.to_csv(CSV_FILE, index=False)
-        return initial_data # انشاء ملف CSV احفظ فيه البلاغات
+        return initial_data
 
 def add_report(new_report_dict):
+    """إضافة بلاغ جديد وحفظه دائمًا داخل ملف CSV"""
     df = load_reports()
     updated_df = pd.concat([df, pd.DataFrame([new_report_dict])], ignore_index=True)
-    updated_df.to_csv(CSV_FILE, index=False)  # اضافة بلاغ جديد و حفظه في الملف 
+    updated_df.to_csv(CSV_FILE, index=False)
 
 with st.sidebar:
     st.markdown("## ♻️ EcoVision")
@@ -180,7 +185,7 @@ elif page == "🛣️ Street Detection":
 
     elif source_type == "🎞️ Video Upload":
         video_file = st.file_uploader("Upload Video", type=["mp4", "mov", "avi", "mkv"])
-        frame_skip = 5  # تحليل كافي ومستمر لتسريع المعالجة دون الحاجة لشريط سحب
+        frame_skip = 5  
 
         if video_file is not None:
             tfile = tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(video_file.name)[1])
@@ -272,7 +277,9 @@ elif page == "🚨 Report a Dirty Area":
         num_obj = len(items)
         priority = "🔴 High" if num_obj > 5 else ("🟠 Medium" if num_obj > 2 else "🟢 Low")
         
-        next_id = 1021 + len(st.session_state.reports_list)
+        # 🆕 قراءة الملف لمعرفة الرقم التسلسلي التالي
+        df_current = load_reports()
+        next_id = 1001 + len(df_current)
         report_id = f"Report #{next_id}"
 
         st.markdown("---")
@@ -288,20 +295,26 @@ elif page == "🚨 Report a Dirty Area":
 
         if st.button("🚀 Submit Report", type="primary"):
             new_rep = {
-                "ID": report_id, "Area": chosen_area, "Objects": num_obj,
-                "Priority": priority, "Date": datetime.now().strftime("%d %b %Y"), "Status": "Pending Review"
+                "ID": report_id, 
+                "Area": chosen_area, 
+                "Objects": num_obj,
+                "Priority": priority, 
+                "Date": datetime.now().strftime("%d %b %Y"), 
+                "Status": "Pending Review"
             }
-            st.session_state.reports_list.append(new_rep)
-            st.success(f"Report {report_id} submitted successfully!")
+            # 🆕 حفظ البلاغ دائمًا في ملف CSV
+            add_report(new_rep)
+            st.success(f"Report {report_id} submitted and saved successfully!")
 
 # ANALYTICS DASHBOARD 
 elif page == "📊 Analytics Dashboard":
     st.markdown("## 📊 Analytics Dashboard")
     
-    df = pd.DataFrame(st.session_state.reports_list)
+    # 🆕 قراءة البيانات مباشرة من ملف CSV
+    df = load_reports()
     
     total = len(df)
-    resolved = len(df[df["Status"] == "Resolved"])
+    resolved = len(df[df["Status"] == "Resolved"]) if not df.empty else 0
     
     c1, c2, c3 = st.columns(3)
     c1.metric("Total Reports", total)
