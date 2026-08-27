@@ -150,30 +150,17 @@ elif page == "🛣️ Street Detection":
     source_type = st.radio(
         "Source",
         ["📷 Image", "🎞️ Video Upload" , "🎥 Live Stream"],
-        horizontal=True
-    )
-    uploaded_image = st.file_uploader(
-        "Upload a mobile-phone photo",
-        type=["jpg", "jpeg", "png"])
- 
-    camera_image = st.camera_input("Or take a live-camera photo")
- 
-    image_file = uploaded_image
-    if camera_image is not None:
-        image_file = camera_image
- 
-    if image_file is not None:
-        image = Image.open(image_file).convert("RGB")
-        width, height = image.size
-  #  if source_type == "📷 Image":
-   #     img_file = st.file_uploader("Upload Image", type=["jpg", "png", "jpeg"])
+        horizontal=True)
+    
+    if source_type == "📷 Image":
+        img_file = st.file_uploader("Upload Image", type=["jpg", "png", "jpeg"])
 
-    #    if img_file is not None:
-     #       image = Image.open(img_file).convert("RGB")
+        if img_file is not None:
+            image = Image.open(img_file).convert("RGB")
 
-           # with st.spinner("AI is analyzing..."):
-            #    model = load_my_model()
-             #   res = model.predict(image, conf=confidence, verbose=False)[0]
+            with st.spinner("AI is analyzing..."):
+               model = load_my_model()
+               res = model.predict(image, conf=confidence, verbose=False)[0]
 
             col1, col2 = st.columns(2)
             with col1:
