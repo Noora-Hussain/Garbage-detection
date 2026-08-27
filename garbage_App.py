@@ -227,7 +227,33 @@ elif page == "🛣️ Street Detection":
                 st.dataframe(summary, use_container_width=True, hide_index=True)
             else:
                 st.success("✅ Clean footage! No garbage found.")
+                
+    elif page == "🎥 Live Stream":
+        st.title("🎥 Live Waste Detection")
+    
+    # زر تشغيل وإيقاف الكاميرا
+        run = st.toggle("Start Camera")
+        frame_window = st.image([])  # مكان عرض الفيديو
 
+        if run:
+            cap = cv2.VideoCapture(0)  # فتح الكاميرا
+            model = load_my_model()    # تحميل الموديل
+
+            while run:
+                ret, frame = cap.read()
+                if not ret:
+                    st.error("الكاميرا غير شغالة!")
+                    break
+
+            # تحويل اللون وتمرير الصورة للموديل
+                frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                res = model.predict(frame_rgb, conf=confidence, verbose=False)[0]
+
+            # عرض النتيجة مباشرة
+                frame_window.image(res.plot()[:, :, ::-1])
+
+            cap.release()  # إغلاق الكاميرا عند الإيقاف
+            
 # WASTE ASSISTANT 
 elif page == "♻️ Waste Assistant":
     st.markdown("## ♻️ Personal Waste Assistant")
