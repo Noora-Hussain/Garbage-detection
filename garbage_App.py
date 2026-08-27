@@ -42,10 +42,10 @@ GARBAGE_DESCRIPTIONS = {
 }
 
 APP_FOLDER = os.path.dirname(os.path.abspath(__file__))
-MODEL_PATH = os.path.join(APP_FOLDER, "best.pt")
+MODEL_PATH = os.path.join(APP_FOLDER, "best.pt") # bestالوصول الى ملف ال 
 
 @st.cache_resource
-def load_my_model():
+def load_my_model(): #  YOLO تحميل النموذج
     return YOLO(MODEL_PATH)
 
 def count_detected_objects(result):
@@ -57,22 +57,34 @@ def count_detected_objects(result):
         class_id = int(box.cls[0])
         conf = float(box.conf[0])
         detections.append({"Garbage": result.names[class_id], "Confidence": f"{conf * 100:.1f}%"})
-    return detections
+    return detections # استخراج النتائج 
 
 def choose_area_menu(unique_key):
     areas = ["Manama", "Muharraq", "Riffa", "Isa Town", "Hamad Town", "Other"]
-    selected = st.selectbox("Select Area:", areas, key=unique_key)
+    selected = st.selectbox("Select Area:", areas, key=unique_key) # نحديد اسماء المناطق
     
     if selected == "Other":
         custom = st.text_input("Enter area name:", key=f"custom_{unique_key}")
         return custom if custom else "Unspecified"
-    return selected
+    return selected # إذا اختار المستخدم "Other"، يظهر له حقل نصي يدخل فيه اسم المنطقة يدوياً
 
-if "reports_list" not in st.session_state:
-    st.session_state.reports_list = [
-        {"ID": "Report #1", "Area": "Manama", "Objects": 4, "Priority": "🟠 Medium", "Date": "20 Aug 2026", "Status": "Resolved"},
-        {"ID": "Report #2", "Area": "Muharraq", "Objects": 6, "Priority": "🔴 High", "Date": "21 Aug 2026", "Status": "Pending Review"}
-    ]
+CSV_FILE = os.path.join(APP_FOLDER, "reports.csv")
+
+def load_reports():
+    if os.path.exists(CSV_FILE):
+        return pd.read_csv(CSV_FILE)
+    else:
+        initial_data = pd.DataFrame([
+            {"ID": "Report #1", "Area": "Manama", "Objects": 4, "Priority": "🟠 Medium", "Date": "20 Aug 2026", "Status": "Resolved"},
+            {"ID": "Report #2", "Area": "Muharraq", "Objects": 6, "Priority": "🔴 High", "Date": "21 Aug 2026", "Status": "Pending Review"}
+        ]) 
+        initial_data.to_csv(CSV_FILE, index=False)
+        return initial_data # انشاء ملف CSV احفظ فيه البلاغات
+
+def add_report(new_report_dict):
+    df = load_reports()
+    updated_df = pd.concat([df, pd.DataFrame([new_report_dict])], ignore_index=True)
+    updated_df.to_csv(CSV_FILE, index=False)  # اضافة بلاغ جديد و حفظه في الملف 
 
 with st.sidebar:
     st.markdown("## ♻️ EcoVision")
