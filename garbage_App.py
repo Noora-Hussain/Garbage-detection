@@ -226,8 +226,8 @@ elif page == "♻️ Waste Assistant":
         with st.spinner("Identifying item..."):
             model = load_my_model()
             res = model.predict(image, conf=confidence, verbose=False)[0]
-
-        st.image(caption="Result", use_container_width=True)
+            
+        st.image(res.plot()[:, :, ::-1], caption="Result", use_container_width=True) 
         items = count_detected_objects(res)
 
         # التحقق من وجود قمامة واذا فيه يوصف طريقة التخلص منها 
