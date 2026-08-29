@@ -203,7 +203,7 @@ elif page == "🛣️ Street Detection":
             res = model.predict(image, conf=confidence, verbose=False)[0]
 
     # عرض الصورة مع المربعات لتحديد مكان القمامة
-        st.image(caption="AI Detection Result")
+        st.image(res.plot()[:, :, ::-1], caption="AI Detection Result", use_container_width=True) 
 
     # اذا شاف قمامة يجمعها و يحدد نوعها واذا ما شاف يكتب ان الشارع نظيف 
         items = count_detected_objects(res)
