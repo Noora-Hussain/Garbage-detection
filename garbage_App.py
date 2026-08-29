@@ -1,3 +1,4 @@
+# Imports
 import io
 import os
 import tempfile
@@ -33,6 +34,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+# Dictionary 
 GARBAGE_DESCRIPTIONS = {
     "Glass": "Place in the designated glass recycling container.",
     "Metal": "Place in the metal recycling bin.",
@@ -41,13 +43,17 @@ GARBAGE_DESCRIPTIONS = {
     "General Waste": "Place in the general waste bin for non-recyclable items.",
 }
 
+# bestيبحث عن الملف و يحدد موقع ملف ال 
 APP_FOLDER = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATH = os.path.join(APP_FOLDER, "best.pt")
 
+# يحمل و يخزن ملف ال best عشان ما يتم اعادة تحميله في كل مرة 
 @st.cache_resource
 def load_my_model():
     return YOLO(MODEL_PATH)
 
+
+# يستخرج فئات القمامة المكتشفة و درجات الثقة من نتائج النموذج
 def count_detected_objects(result):
     if result.boxes is None:
         return []
@@ -59,25 +65,19 @@ def count_detected_objects(result):
         detections.append({"Garbage": result.names[class_id], "Confidence": f"{conf * 100:.1f}%"})
     return detections
 
+# لتحديد الموقع و تحديد مكان البلاغ بدقة Checkbox تعرض للمستخدم خيار ال
 def choose_area_menu(unique_key):
     st.markdown("📍 **Location & GPS Source**")
     use_gps = st.checkbox("Use Simulated GPS Coordinates", value=True, key=f"gps_{unique_key}")
     
+    # اذا المستخدم اختار تحديد الموقع نحطه و اذا م اختار نحط ليه قائمة المناطق يختار منها 
     if use_gps:
-        # محاكاة لجلب الإحداثيات الجغرافية الحقيقية (GPS Simulation for Bahrain regions)
-        gps_lat = 26.2285
-        gps_lon = 50.5860
-        st.caption(f"🛰️ GPS Coordinates Acquired: Lat {gps_lat}, Lon {gps_lon} (Manama Sector)")
-        return "Manama (GPS Verified)"
-    else:
-        areas = ["Manama", "Muharraq", "Riffa", "Isa Town", "Hamad Town", "Other"]
-        selected = st.selectbox("Select Area manually:", areas, key=unique_key)
-        
-        if selected == "Other":
-            custom = st.text_input("Enter area name:", key=f"custom_{unique_key}")
-            return custom if custom else "Unspecified"
+        return "Manama (GPS)"
+    
+    selected = st.selectbox("Area:", ["Manama", "Muharraq", "Riffa", "Other"], key=unique_key)
         return selected
 
+# CSV يخزن البلاغات عشان ما تختفي
 CSV_FILE = os.path.join(APP_FOLDER, "reports.csv")
 
 def load_reports():
@@ -91,6 +91,7 @@ def load_reports():
         initial_data.to_csv(CSV_FILE, index=False)
         return initial_data
 
+# دالة تحدد موقع البلاغ و تحفظه في الملف بشكل دائم 
 def add_report(new_report_dict):
     df = load_reports()
     updated_df = pd.concat([df, pd.DataFrame([new_report_dict])], ignore_index=True)
@@ -106,9 +107,7 @@ with st.sidebar:
         ["🏠 Home", "🛣️ Street Detection", "♻️ Waste Assistant", "🚨 Report a Dirty Area", "📊 Analytics Dashboard"])
 
     st.markdown("---")
-    # رفع القيمة الافتراضية للـ Confidence إلى 0.45 لتفادي الإنذارات الخاطئة (False Positives)
-    confidence = st.slider("AI Confidence Threshold", 0.10, 0.90, 0.45, 0.05, 
-                           help="Adjust to filter out low-confidence false positives.")
+    confidence = st.slider("AI Confidence Threshold", 0.10, 0.90, 0.45, 0.05, )
 
 # HOME PAGE 
 if page == "🏠 Home":
@@ -158,27 +157,31 @@ elif page == "🛣️ Street Detection":
     st.markdown("## 🛣️ Street Garbage Detection")
     st.write("Analyze street footage with optimized AI thresholding to avoid false detections.")
 
+    # وجود زرين لرفع صورة او كاميرا لايف
     source_type = st.radio(
         "Source",
-        ["📷 Image", "🎞️ Video Upload"],
+        ["📷 Image", "📸 Live Camera"],
         horizontal=True)
-    
+
+    # في حال رفع صورة لازم تكون jpg", "png", "jpeg واذا ما كانت برفضها 
     if source_type == "📷 Image":
         img_file = st.file_uploader("Upload Image", type=["jpg", "png", "jpeg"])
 
         if img_file is not None:
             image = Image.open(img_file).convert("RGB")
-
-            with st.spinner("AI is analyzing and filtering noise..."):
+            
+            with st.spinner("AI is analyzing and filtering noise"):
                model = load_my_model()
                res = model.predict(image, conf=confidence, verbose=False)[0]
-
+                
+            # يقسم الشاشة لقسمين عمود للصورة الاصلية و عمود للصورة بعد تحديد المربعات
             col1, col2 = st.columns(2)
             with col1:
-                st.image(image, caption="Original", use_container_width=True)
+                st.image(image, caption="Original",)
             with col2:
-                st.image(res.plot()[:, :, ::-1], caption="AI Filtered Detection", use_container_width=True)
+                st.image(caption="AI Filtered Detection")
 
+            # يحسب عدد الاجسام المكتشفة و اذا وجد يعرض تحذير واذا م وجد يعرض رسالة ان الشارع نظيف 
             items = count_detected_objects(res)
             if items:
                 found_types = sorted(set(i["Garbage"] for i in items))
@@ -186,63 +189,35 @@ elif page == "🛣️ Street Detection":
                 st.dataframe(pd.DataFrame(items), use_container_width=True, hide_index=True)
             else:
                 st.success("✅ Clean street! No significant garbage detected.")
+   #  في حال اختيار الكاميرا لايف          
+    st.markdown("### 📸 Live Camera Detection")
 
-    elif source_type == "🎞️ Video Upload":
-        video_file = st.file_uploader("Upload Video", type=["mp4", "mov", "avi", "mkv"])
-        frame_skip = 5 
+    cam_file = st.camera_input("Take a photo")
 
-        if video_file is not None:
-            tfile = tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(video_file.name)[1])
-            tfile.write(video_file.read())
-            tfile.close()
-
-            all_detections = []
-            cap = cv2.VideoCapture(tfile.name)
-            total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-            frame_count = 0
-
-            st_frame = st.empty()
-            progress_bar = st.progress(0)
+    # نتاكد هل المستخدم التقط صورة او لا 
+    if cam_file is not None:
+        image = Image.open(cam_file).convert("RGB")
+        # يمرر الصورة على الموديل عشان يشوفها
+        with st.spinner("AI is analyzing..."):
             model = load_my_model()
+            res = model.predict(image, conf=confidence, verbose=False)[0]
 
-            with st.spinner("Processing video frames..."):
-                while cap.isOpened():
-                    ret, frame = cap.read()
-                    if not ret:
-                        break
+    # عرض الصورة مع المربعات لتحديد مكان القمامة
+        st.image(res.plot()[caption="AI Detection Result", use_container_width=True)
 
-                    frame_count += 1
-                    if frame_count % frame_skip != 0:
-                        continue
-
-                    frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                    res = model.predict(frame_rgb, conf=confidence, verbose=False)[0]
-
-                    items = count_detected_objects(res)
-                    all_detections.extend(items)
-
-                    annotated_frame = res.plot()
-                    st_frame.image(annotated_frame[:, :, ::-1], caption=f"Analyzing Frame {frame_count}", use_container_width=True)
-
-                    if total_frames > 0:
-                        progress_bar.progress(min(frame_count / total_frames, 1.0))
-
-            cap.release()
-            os.unlink(tfile.name)
-
-            st.markdown("---")
-            if all_detections:
-                st.warning(f"⚠️ Found {len(all_detections)} validated garbage instances across analyzed frames!")
-                summary = pd.DataFrame(all_detections)["Garbage"].value_counts().reset_index()
-                summary.columns = ["Garbage", "Count"]
-                st.dataframe(summary, use_container_width=True, hide_index=True)
-            else:
-                st.success("✅ Clean footage! No garbage found.")
+    # اذا شاف قمامة يجمعها و يحدد نوعها واذا ما شاف يكتب ان الشارع نظيف 
+        items = count_detected_objects(res)
+        if items:
+            found_types = sorted(set(i["Garbage"] for i in items))
+            st.warning(f"⚠️ Garbage found! Type(s): {', '.join(found_types)}")
+            st.dataframe(pd.DataFrame(items), use_container_width=True, hide_index=True)
+        else:
+            st.success("✅ Clean area! No garbage detected.")
 
 # WASTE ASSISTANT 
 elif page == "♻️ Waste Assistant":
     st.markdown("## ♻️ Personal Waste Assistant")
-    
+
     src = st.radio("Source", ["Upload", "Camera"], horizontal=True)
     img_file = st.file_uploader("Upload item", type=["jpg", "png", "jpeg"]) if src == "Upload" else st.camera_input("Take photo")
 
@@ -252,9 +227,10 @@ elif page == "♻️ Waste Assistant":
             model = load_my_model()
             res = model.predict(image, conf=confidence, verbose=False)[0]
 
-        st.image(res.plot()[:, :, ::-1], caption="Result", use_container_width=True)
+        st.image(caption="Result", use_container_width=True)
         items = count_detected_objects(res)
-        
+
+        # التحقق من وجود قمامة واذا فيه يوصف طريقة التخلص منها 
         if items:
             for i in items:
                 name = i["Garbage"]
@@ -272,33 +248,36 @@ elif page == "🚨 Report a Dirty Area":
 
     if img_file is not None:
         image = Image.open(img_file).convert("RGB")
-        
-        with st.spinner("Analyzing area and calculating priority..."):
+
+        with st.spinner("Analyzing area & priority..."):
             model = load_my_model()
             res = model.predict(image, conf=confidence, verbose=False)[0]
 
+        # يحسب عدد قطع النفايات اللي لقاها الموديل في الصورة
         items = count_detected_objects(res)
         num_obj = len(items)
         found_names = ", ".join(set([i["Garbage"] for i in items])) if items else "None"
+        
+        #  حساب الاولوية بناء على عدد الاوساخ
         priority = "🔴 High" if num_obj > 5 else ("🟠 Medium" if num_obj > 2 else "🟢 Low")
         
-        df_current = load_reports()
-        next_id = 1001 + len(df_current)
-        report_id = f"Report #{next_id}"
+        # تحديد رقم البلاغ
+        report_id = f"Report #{1001 + len(load_reports())}"
 
+        # عرض تفاصيل البلاغ كلها
         st.markdown("---")
         col1, col2 = st.columns(2)
         with col1:
             st.image(image, caption="Evidence Image", use_container_width=True)
         with col2:
             st.markdown(f"### **{report_id}**")
-            st.markdown(f"📍 **Location/GPS:** {chosen_area}")
-            st.markdown(f"🗑️ **Detected Objects Count:** {num_obj}")
-            st.markdown(f"🏷️ **Waste Types:** {found_names}")
-            st.markdown(f"⚡ **Assigned Priority:** {priority}")
-            st.markdown(f"🔄 **Status:** 🟡 Pending Review")
+            st.markdown(f"📍 **Location:** {chosen_area}")
+            st.markdown(f"🗑️ **Count:** {num_obj}")
+            st.markdown(f"🏷️ **Types:** {found_names}")
+            st.markdown(f"⚡ **Priority:** {priority}")
 
-        if st.button("🚀 Submit Report & Save Data", type="primary"):
+        # في حال ضغط زر البلاغ يجمع الكود كل المعلومات و يحفضها في النظام
+        if st.button("🚀 Submit Report", type="primary"):
             new_rep = {
                 "ID": report_id, 
                 "Area": chosen_area, 
@@ -309,18 +288,21 @@ elif page == "🚨 Report a Dirty Area":
                 "Details": found_names
             }
             add_report(new_rep)
-            st.success(f"Report {report_id} successfully submitted, geo-tagged, and saved to database!")
+            st.success(f"Report {report_id} successfully submitted and saved!")
+
 
 # ANALYTICS DASHBOARD 
 elif page == "📊 Analytics Dashboard":
     st.markdown("## 📊 Analytics Dashboard & High-Density Insights")
-    
+
+    # اخذ كل البلاغات الموجوده في النظام وحساب عددها كامل وعدد يلي انحلت
     df = load_reports()
     
     total = len(df)
     resolved = len(df[df["Status"] == "Resolved"]) if not df.empty else 0
     high_priority_count = len(df[df["Priority"] == "🔴 High"]) if not df.empty else 0
-    
+
+    # عرض الارقام بشكل واضح
     c1, c2, c3, c4 = st.columns(4)
     c1.metric("Total Reports", total)
     c2.metric("Resolved Reports", resolved)
@@ -328,13 +310,15 @@ elif page == "📊 Analytics Dashboard":
     c4.metric("Active Regions", df["Area"].nunique() if not df.empty else 0)
 
     st.markdown("---")
-    
+
+    # الرسم البياني 
     col_a, col_b = st.columns(2)
     with col_a:
         st.markdown("### 📈 Reports Distribution by Area")
         if not df.empty:
             st.bar_chart(df["Area"].value_counts())
             
+     # جدول الاماكن يلي اولويتها عالية    
     with col_b:
         st.markdown("### 🚨 High-Density Garbage Hotspots")
         if not df.empty and "Priority" in df.columns:
@@ -343,7 +327,7 @@ elif page == "📊 Analytics Dashboard":
                 st.dataframe(hotspots[["ID", "Area", "Objects", "Date", "Status"]], use_container_width=True, hide_index=True)
             else:
                 st.info("No high-density critical hotspots reported yet.")
-
+    # يسوي جدول كامل يعرض البلاغات 
     st.markdown("### 📋 Complete Reports Log")
     if not df.empty:
         st.dataframe(df, use_container_width=True, hide_index=True)
