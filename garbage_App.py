@@ -177,9 +177,9 @@ elif page == "🛣️ Street Detection":
             # يقسم الشاشة لقسمين عمود للصورة الاصلية و عمود للصورة بعد تحديد المربعات
             col1, col2 = st.columns(2)
             with col1:
-                st.image(image, caption="Original",)
+                st.image(image, caption="Original")
             with col2:
-                st.image(caption="AI Filtered Detection")
+                st.image(res.plot()[:, :, ::-1], caption="AI Filtered Detection", use_container_width=True) 
 
             # يحسب عدد الاجسام المكتشفة و اذا وجد يعرض تحذير واذا م وجد يعرض رسالة ان الشارع نظيف 
             items = count_detected_objects(res)
