@@ -75,7 +75,7 @@ def choose_area_menu(unique_key):
         return "Manama (GPS)"
     
     selected = st.selectbox("Area:", ["Manama", "Muharraq", "Riffa", "Other"], key=unique_key)
-        return selected
+    return selected
 
 # CSV يخزن البلاغات عشان ما تختفي
 CSV_FILE = os.path.join(APP_FOLDER, "reports.csv")
