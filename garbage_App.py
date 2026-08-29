@@ -160,7 +160,7 @@ elif page == "🛣️ Street Detection":
     # وجود زرين لرفع صورة او كاميرا لايف
     source_type = st.radio(
         "Source",
-        ["📷 Image", "📸 Live Camera"],
+        ["📷 Image"],
         horizontal=True)
 
     # في حال رفع صورة لازم تكون jpg", "png", "jpeg واذا ما كانت برفضها 
