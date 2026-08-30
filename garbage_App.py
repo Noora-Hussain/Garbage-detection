@@ -112,7 +112,7 @@ with st.sidebar:
 
     page = st.radio(
         "Navigation",
-        ["🛣️ Street Detection", "🚨 Report a Dirty Area", "📊 Analytics Dashboard"])
+        ["🛣️ Street Detection", "🚨 Report a Dirty Area", "📊 Analytics Dashboard" ,  "📄 Report Generation"])
 
     st.markdown("---")
     confidence = st.slider("AI Confidence Threshold", 0.10, 0.90, 0.45, 0.05, )
@@ -264,3 +264,19 @@ elif page == "📊 Analytics Dashboard":
     st.markdown("### 📋 Complete Reports Log")
     if not df.empty:
         st.dataframe(df, use_container_width=True, hide_index=True)
+
+    # Report Generation
+    elif page == "Report Generation":
+    st.markdown("## 📄 Report Generation")
+ 
+    df = load_reports()
+    st.dataframe(df, use_container_width=True, hide_index=True)
+ 
+    csv_data = df.to_csv(index=False).encode("utf-8")
+    st.download_button(
+        label="⬇️ Download Report (CSV)",
+        data=csv_data,
+        file_name="ecovision_report.csv",
+        mime="text/csv",
+    )
+
