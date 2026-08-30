@@ -117,6 +117,13 @@ with st.sidebar:
     confidence = st.slider("AI Confidence Threshold", 0.10, 0.90, 0.45, 0.05, )
 
 # STREET DETECTION 
+
+class YOLOProcessor(VideoProcessorBase):
+    def recv(self, frame):
+        img = frame.to_ndarray(format="bgr24")
+        results = load_my_model().predict(img, conf=0.45, verbose=False)[0]
+        return av.VideoFrame.from_ndarray(results.plot(), format="bgr24")
+        
 if page == "🛣️ Street Detection":
     st.markdown("## 🛣️ Street Garbage Detection")
     st.write("Analyze street footage with optimized AI thresholding to avoid false detections.")
@@ -128,16 +135,6 @@ if page == "🛣️ Street Detection":
     img_file = None
     if source_type == "📷 Image Upload":
         img_file = st.file_uploader("Upload Image", type=["jpg", "png", "jpeg"])
-
-    class YOLOProcessor(VideoProcessorBase):
-        def recv(self, frame):
-            img = frame.to_ndarray(format="bgr24")
-            results = load_my_model().predict(img, conf=confidence, verbose=False)[0]
-            return av.VideoFrame.from_ndarray(results.plot(), format="bgr24")
- 
-webrtc_streamer(key="live", video_processor_factory=YOLOProcessor)
- 
-        
 
     if img_file is not None:
         image = Image.open(img_file).convert("RGB")
