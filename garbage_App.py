@@ -117,49 +117,6 @@ with st.sidebar:
     st.markdown("---")
     confidence = st.slider("AI Confidence Threshold", 0.10, 0.90, 0.45, 0.05, )
 
-# HOME PAGE 
-if page == "🏠 Home":
-    st.markdown("""
-    <div class="hero">
-        <h1>♻️ EcoVision</h1>
-        <p>Smart AI-powered waste detection system for cleaner streets and communities.</p>
-    </div>
-    """, unsafe_allow_html=True)
-
-    st.markdown('<div class="section-title">Features</div>', unsafe_allow_html=True)
-    
-    c1, c2 = st.columns(2)
-    with c1:
-        st.markdown("""
-        <div class="feature-card">
-            <h3>🛣️ Street Detection</h3>
-            <p>Analyze street images and live video footage to detect waste presence and evaluate cleanliness levels.</p>
-        </div>
-        """, unsafe_allow_html=True)
-    with c2:
-        st.markdown("""
-        <div class="feature-card">
-            <h3>♻️ Waste Assistant</h3>
-            <p>Classify individual waste items via photo or camera and receive immediate recycling recommendations.</p>
-        </div>
-        """, unsafe_allow_html=True)
-        
-    c3, c4 = st.columns(2)
-    with c3:
-        st.markdown("""
-        <div class="feature-card">
-            <h3>🚨 Report a Dirty Area</h3>
-            <p>Submit photos of polluted areas with GPS location tagging, automatic AI object count, and priority level assignment.</p>
-        </div>
-        """, unsafe_allow_html=True)
-    with c4:
-        st.markdown("""
-        <div class="feature-card">
-            <h3>📊 Analytics Dashboard</h3>
-            <p>Track high-density garbage locations, regional clean-up statistics, and active area distributions.</p>
-        </div>
-        """, unsafe_allow_html=True)
-
 # STREET DETECTION 
 elif page == "🛣️ Street Detection":
     st.markdown("## 🛣️ Street Garbage Detection")
