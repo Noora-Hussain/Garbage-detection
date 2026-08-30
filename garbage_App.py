@@ -1,9 +1,6 @@
 # Imports
-import io
 import os
-import tempfile
 import numpy as np
-import cv2
 import pandas as pd
 import streamlit as st
 from PIL import Image
@@ -42,6 +39,17 @@ GARBAGE_DESCRIPTIONS = {
     "Plastic": "Place in the plastic recycling bin.",
     "General Waste": "Place in the general waste bin for non-recyclable items.",
 }
+
+# إحداثيات المناطق للخريطة التفاعلية
+coords = {
+    "Manama": (26.2285, 50.5860),
+    "Manama (GPS)": (26.2285, 50.5860),
+    "Muharraq": (26.2572, 50.6119),
+    "Riffa": (26.1300, 50.5550),
+    "Other": (26.2000, 50.5800)
+} 
+
+
 
 # bestيبحث عن الملف و يحدد موقع ملف ال 
 APP_FOLDER = os.path.dirname(os.path.abspath(__file__))
@@ -292,6 +300,15 @@ elif page == "🚨 Report a Dirty Area":
 
 
 # ANALYTICS DASHBOARD 
+
+# إضافة إحداثيات المناطق تلقائياً
+st.markdown("### 🗺️ Live Reports Map")
+if not df.empty:
+    df["lat"] = df["Area"].map(lambda x: coords.get(x, (26.2285, 50.5860))[0])
+    df["lon"] = df["Area"].map(lambda x: coords.get(x, (26.2285, 50.5860))[1])
+    st.map(df[["lat", "lon"]], zoom=10)
+
+
 elif page == "📊 Analytics Dashboard":
     st.markdown("## 📊 Analytics Dashboard & High-Density Insights")
 
