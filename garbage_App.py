@@ -127,13 +127,6 @@ class YOLOProcessor(VideoProcessorBase):
         results = load_my_model().predict(img, conf=0.45, verbose=False)[0]
         return av.VideoFrame.from_ndarray(results.plot(), format="bgr24")
 
-webrtc_streamer(
-    key="live-detection",
-    video_processor_factory=YOLOProcessor,
-    rtc_configuration=RTC_CONFIGURATION,
-    media_stream_constraints={"video": True, "audio": False},
-)
-
 if page == "🛣️ Street Detection":
     st.markdown("## 🛣️ Street Garbage Detection")
     st.write("Analyze street footage with optimized AI thresholding to avoid false detections.")
