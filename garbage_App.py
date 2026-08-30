@@ -198,30 +198,6 @@ elif page == "🛣️ Street Detection":
             else:
                 st.success("✅ Clean street! No significant garbage detected.")
                 
-   #  في حال اختيار الكاميرا لايف          
-    st.markdown("### 📸 Live Camera Detection")
-
-    cam_file = st.camera_input("Take a photo")
-
-    # نتاكد هل المستخدم التقط صورة او لا 
-    if cam_file is not None:
-        image = Image.open(cam_file).convert("RGB")
-        # يمرر الصورة على الموديل عشان يشوفها
-        with st.spinner("AI is analyzing..."):
-            model = load_my_model()
-            res = model.predict(image, conf=confidence, verbose=False)[0]
-
-    # عرض الصورة مع المربعات لتحديد مكان القمامة
-        st.image(res.plot()[:, :, ::-1], caption="AI Detection Result", use_container_width=True) 
-
-    # اذا شاف قمامة يجمعها و يحدد نوعها واذا ما شاف يكتب ان الشارع نظيف 
-        items = count_detected_objects(res)
-        if items:
-            found_types = sorted(set(i["Garbage"] for i in items))
-            st.warning(f"⚠️ Garbage found! Type(s): {', '.join(found_types)}")
-            st.dataframe(pd.DataFrame(items), use_container_width=True, hide_index=True)
-        else:
-            st.success("✅ Clean area! No garbage detected.")
 
 # WASTE ASSISTANT 
 elif page == "♻️ Waste Assistant":
