@@ -266,17 +266,17 @@ elif page == "📊 Analytics Dashboard":
         st.dataframe(df, use_container_width=True, hide_index=True)
 
     # Report Generation
-    elif page == "Report Generation":
-        st.markdown("## 📄 Report Generation")
+elif page == "Report Generation":
+    st.markdown("## 📄 Report Generation")
  
-        df = load_reports()
-        st.dataframe(df, use_container_width=True, hide_index=True)
+    df = load_reports()
+    st.dataframe(df, use_container_width=True, hide_index=True)
  
-        csv_data = df.to_csv(index=False).encode("utf-8")
-        st.download_button(
-            label="⬇️ Download Report (CSV)",
-            data=csv_data,
-            file_name="ecovision_report.csv",
-            mime="text/csv",
+    csv_data = df.to_csv(index=False).encode("utf-8")
+    st.download_button(
+        label="⬇️ Download Report (CSV)",
+        data=csv_data,
+        file_name="ecovision_report.csv",
+        mime="text/csv",
     )
 
