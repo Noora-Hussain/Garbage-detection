@@ -130,10 +130,10 @@ if page == "🛣️ Street Detection":
         img_file = st.file_uploader("Upload Image", type=["jpg", "png", "jpeg"])
     else: 
     class YOLOProcessor(VideoProcessorBase):
-    def recv(self, frame):
-        img = frame.to_ndarray(format="bgr24")
-        results = load_my_model().predict(img, conf=confidence, verbose=False)[0]
-        return av.VideoFrame.from_ndarray(results.plot(), format="bgr24")
+        def recv(self, frame):
+            img = frame.to_ndarray(format="bgr24")
+            results = load_my_model().predict(img, conf=confidence, verbose=False)[0]
+            return av.VideoFrame.from_ndarray(results.plot(), format="bgr24")
  
 webrtc_streamer(key="live", video_processor_factory=YOLOProcessor)
  
