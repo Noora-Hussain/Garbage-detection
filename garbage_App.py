@@ -118,7 +118,7 @@ with st.sidebar:
     confidence = st.slider("AI Confidence Threshold", 0.10, 0.90, 0.45, 0.05, )
 
 # STREET DETECTION 
-elif page == "🛣️ Street Detection":
+if page == "🛣️ Street Detection":
     st.markdown("## 🛣️ Street Garbage Detection")
     st.write("Analyze street footage with optimized AI thresholding to avoid false detections.")
 
