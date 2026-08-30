@@ -8,3 +8,4 @@ streamlit-webrtc
 av
 libgl1
 libglib2.0-0
+opencv-python==4.10.0.84
