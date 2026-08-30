@@ -6,6 +6,8 @@ import streamlit as st
 from PIL import Image
 from ultralytics import YOLO
 from datetime import datetime
+from streamlit_webrtc import webrtc_streamer, VideoProcessorBase
+import av
 
 st.set_page_config(page_title="EcoVision | Smart Waste Detection", page_icon="♻️", layout="wide", initial_sidebar_state="expanded")
 
@@ -49,8 +51,6 @@ coords = {
     "Other": (26.2000, 50.5800)
 } 
 
-
-
 # bestيبحث عن الملف و يحدد موقع ملف ال 
 APP_FOLDER = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATH = os.path.join(APP_FOLDER, "best.pt")
@@ -59,7 +59,6 @@ MODEL_PATH = os.path.join(APP_FOLDER, "best.pt")
 @st.cache_resource
 def load_my_model():
     return YOLO(MODEL_PATH)
-
 
 # يستخرج فئات القمامة المكتشفة و درجات الثقة من نتائج النموذج
 def count_detected_objects(result):
@@ -129,8 +128,15 @@ if page == "🛣️ Street Detection":
     img_file = None
     if source_type == "📷 Image Upload":
         img_file = st.file_uploader("Upload Image", type=["jpg", "png", "jpeg"])
-    else:
-        img_file = st.camera_input("Take a photo")
+    else: 
+    class YOLOProcessor(VideoProcessorBase):
+    def recv(self, frame):
+        img = frame.to_ndarray(format="bgr24")
+        results = load_my_model().predict(img, conf=confidence, verbose=False)[0]
+        return av.VideoFrame.from_ndarray(results.plot(), format="bgr24")
+ 
+webrtc_streamer(key="live", video_processor_factory=YOLOProcessor)
+ 
         
 
     if img_file is not None:
