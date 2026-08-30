@@ -117,6 +117,11 @@ with st.sidebar:
     confidence = st.slider("AI Confidence Threshold", 0.10, 0.90, 0.45, 0.05, )
 
 # STREET DETECTION 
+
+RTC_CONFIGURATION = RTCConfiguration(
+    {"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]}) 
+
+
 class YOLOProcessor(VideoProcessorBase):
     def recv(self, frame):
         img = frame.to_ndarray(format="bgr24")
