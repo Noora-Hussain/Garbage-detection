@@ -176,11 +176,11 @@ elif page == "🛣️ Street Detection":
         img_file = st.camera_input("Take a photo")
         
 
-        if img_file is not None:
-            image = Image.open(img_file).convert("RGB")
-            with st.spinner("AI is analyzing and filtering noise"):
-               model = load_my_model()
-               res = model.predict(image, conf=confidence, verbose=False)[0]
+    if img_file is not None:
+        image = Image.open(img_file).convert("RGB")
+        with st.spinner("AI is analyzing and filtering noise"):
+            model = load_my_model()
+            res = model.predict(image, conf=confidence, verbose=False)[0]
                 
             # يقسم الشاشة لقسمين عمود للصورة الاصلية و عمود للصورة بعد تحديد المربعات
             col1, col2 = st.columns(2)
