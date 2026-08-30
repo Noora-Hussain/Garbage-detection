@@ -6,4 +6,4 @@ numpy
 Pillow
 streamlit-webrtc
 av
-opencv-python-headless
+libgl1-mesa-glx
