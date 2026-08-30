@@ -260,15 +260,12 @@ elif page == "📊 Analytics Dashboard":
                 st.dataframe(hotspots[["ID", "Area", "Objects", "Date", "Status"]], use_container_width=True, hide_index=True)
             else:
                 st.info("No high-density critical hotspots reported yet.")
-    # يسوي جدول كامل يعرض البلاغات 
-    st.markdown("### 📋 Complete Reports Log")
-    if not df.empty:
-        st.dataframe(df, use_container_width=True, hide_index=True)
 
     # Report Generation
 elif page == "📄 Report Generation":
+    
+    # يسوي جدول كامل يعرض البلاغات 
     st.markdown("## 📄 Report Generation")
- 
     df = load_reports()
     st.dataframe(df, use_container_width=True, hide_index=True)
  
