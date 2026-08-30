@@ -266,7 +266,7 @@ elif page == "📊 Analytics Dashboard":
         st.dataframe(df, use_container_width=True, hide_index=True)
 
     # Report Generation
-elif page == "Report Generation":
+elif page == "📄 Report Generation":
     st.markdown("## 📄 Report Generation")
  
     df = load_reports()
