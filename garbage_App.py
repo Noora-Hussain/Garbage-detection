@@ -117,7 +117,6 @@ with st.sidebar:
     confidence = st.slider("AI Confidence Threshold", 0.10, 0.90, 0.45, 0.05, )
 
 # STREET DETECTION 
-
 class YOLOProcessor(VideoProcessorBase):
     def recv(self, frame):
         img = frame.to_ndarray(format="bgr24")
@@ -135,6 +134,9 @@ if page == "🛣️ Street Detection":
     img_file = None
     if source_type == "📷 Image Upload":
         img_file = st.file_uploader("Upload Image", type=["jpg", "png", "jpeg"])
+     else:
+        st.info("Allow camera access to start live detection.")
+        webrtc_streamer(key="live-detection", video_processor_factory=YOLOProcessor)
 
     if img_file is not None:
         image = Image.open(img_file).convert("RGB")
