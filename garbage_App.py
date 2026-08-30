@@ -301,14 +301,6 @@ elif page == "🚨 Report a Dirty Area":
 
 # ANALYTICS DASHBOARD 
 
-# إضافة إحداثيات المناطق تلقائياً
-st.markdown("### 🗺️ Live Reports Map")
-if not df.empty:
-    df["lat"] = df["Area"].map(lambda x: coords.get(x, (26.2285, 50.5860))[0])
-    df["lon"] = df["Area"].map(lambda x: coords.get(x, (26.2285, 50.5860))[1])
-    st.map(df[["lat", "lon"]], zoom=10)
-
-
 elif page == "📊 Analytics Dashboard":
     st.markdown("## 📊 Analytics Dashboard & High-Density Insights")
 
@@ -327,7 +319,14 @@ elif page == "📊 Analytics Dashboard":
     c4.metric("Active Regions", df["Area"].nunique() if not df.empty else 0)
 
     st.markdown("---")
-
+    
+# إضافة إحداثيات المناطق تلقائياً
+    st.markdown("### 🗺️ Live Reports Map")
+    if not df.empty:
+        df["lat"] = df["Area"].map(lambda x: coords.get(x, (26.2285, 50.5860))[0])
+        df["lon"] = df["Area"].map(lambda x: coords.get(x, (26.2285, 50.5860))[1])
+        st.map(df[["lat", "lon"]], zoom=10)
+    
     # الرسم البياني 
     col_a, col_b = st.columns(2)
     with col_a:
