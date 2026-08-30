@@ -134,7 +134,8 @@ if page == "🛣️ Street Detection":
     img_file = None
     if source_type == "📷 Image Upload":
         img_file = st.file_uploader("Upload Image", type=["jpg", "png", "jpeg"])
-     else:
+     
+    else:
         st.info("Allow camera access to start live detection.")
         webrtc_streamer(key="live-detection", video_processor_factory=YOLOProcessor)
 
