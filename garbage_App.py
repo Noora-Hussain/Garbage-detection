@@ -6,8 +6,8 @@ import streamlit as st
 from PIL import Image
 from ultralytics import YOLO
 from datetime import datetime
-from streamlit_webrtc import webrtc_streamer, VideoProcessorBase
 import av
+from streamlit_webrtc import webrtc_streamer, VideoProcessorBase, RTCConfiguration
 
 st.set_page_config(page_title="EcoVision | Smart Waste Detection", page_icon="♻️", layout="wide", initial_sidebar_state="expanded")
 
