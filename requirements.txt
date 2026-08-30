@@ -1,9 +1,8 @@
 streamlit
 ultralytics
-opencv-python-headless==4.10.0.84
+opencv-python-headless
 pandas
 numpy
 Pillow
 streamlit-webrtc
 av
-libgl1-mesa-glx
