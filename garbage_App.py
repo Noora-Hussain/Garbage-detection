@@ -166,18 +166,18 @@ elif page == "🛣️ Street Detection":
     st.write("Analyze street footage with optimized AI thresholding to avoid false detections.")
 
     # وجود زرين لرفع صورة او كاميرا لايف
-    source_type = st.radio(
-        "Source",
-        ["📷 Image"],
-        horizontal=True)
+    source_type = st.radio("Source", ["📷 Image Upload", "📸 Live Camera"], horizontal=True)
 
     # في حال رفع صورة لازم تكون jpg", "png", "jpeg واذا ما كانت برفضها 
-    if source_type == "📷 Image":
+    img_file = None
+    if source_type == "📷 Image Upload":
         img_file = st.file_uploader("Upload Image", type=["jpg", "png", "jpeg"])
+    else:
+        img_file = st.camera_input("Take a photo")
+        
 
         if img_file is not None:
             image = Image.open(img_file).convert("RGB")
-            
             with st.spinner("AI is analyzing and filtering noise"):
                model = load_my_model()
                res = model.predict(image, conf=confidence, verbose=False)[0]
@@ -197,6 +197,7 @@ elif page == "🛣️ Street Detection":
                 st.dataframe(pd.DataFrame(items), use_container_width=True, hide_index=True)
             else:
                 st.success("✅ Clean street! No significant garbage detected.")
+                
    #  في حال اختيار الكاميرا لايف          
     st.markdown("### 📸 Live Camera Detection")
 
