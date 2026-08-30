@@ -112,7 +112,7 @@ with st.sidebar:
 
     page = st.radio(
         "Navigation",
-        ["🏠 Home", "🛣️ Street Detection", "♻️ Waste Assistant", "🚨 Report a Dirty Area", "📊 Analytics Dashboard"])
+        ["🛣️ Street Detection", "🚨 Report a Dirty Area", "📊 Analytics Dashboard"])
 
     st.markdown("---")
     confidence = st.slider("AI Confidence Threshold", 0.10, 0.90, 0.45, 0.05, )
@@ -155,23 +155,6 @@ if page == "🛣️ Street Detection":
             else:
                 st.success("✅ Clean street! No significant garbage detected.")
                 
-
-# WASTE ASSISTANT 
-elif page == "♻️ Waste Assistant":
-    st.markdown("## ♻️ Personal Waste Assistant")
-
-    src = st.radio("Source", ["Upload", "Camera"], horizontal=True)
-    img_file = st.file_uploader("Upload item", type=["jpg", "png", "jpeg"]) if src == "Upload" else st.camera_input("Take photo")
-
-    if img_file is not None:
-        image = Image.open(img_file).convert("RGB")
-        with st.spinner("Identifying item..."):
-            model = load_my_model()
-            res = model.predict(image, conf=confidence, verbose=False)[0]
-            
-        st.image(res.plot()[:, :, ::-1], caption="Result", use_container_width=True) 
-        items = count_detected_objects(res)
-
         # التحقق من وجود قمامة واذا فيه يوصف طريقة التخلص منها 
         if items:
             for i in items:
