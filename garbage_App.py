@@ -128,7 +128,7 @@ if page == "🛣️ Street Detection":
     img_file = None
     if source_type == "📷 Image Upload":
         img_file = st.file_uploader("Upload Image", type=["jpg", "png", "jpeg"])
-    else: 
+
     class YOLOProcessor(VideoProcessorBase):
         def recv(self, frame):
             img = frame.to_ndarray(format="bgr24")
