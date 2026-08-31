@@ -96,7 +96,7 @@ def get_user_location():
         lat = location["latitude"]
         lon = location["longitude"]
         area_name = get_area_name_from_coords(lat, lon)
-        st.success(f"📍 Location Captured: {area_name} ({lat:.4f}, {lon:.4f})")
+        st.success(f"📍 Location Captured: {area_name}")
         return {"name": area_name, "lat": lat, "lon": lon}
     else:
         return {"name": "Other", "lat": coords["Other"][0], "lon": coords["Other"][1]}
