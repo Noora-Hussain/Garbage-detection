@@ -334,18 +334,18 @@ elif page == "📊 Analytics Dashboard":
     st.markdown(map_title)
     if not df.empty:
     # 1. تحويل الأعمدة إلى قيم رقمية وتنظيف القيم المفقودة
-    df["lat"] = pd.to_numeric(df.get("lat"), errors="coerce")
-    df["lon"] = pd.to_numeric(df.get("lon"), errors="coerce")
+        df["lat"] = pd.to_numeric(df.get("lat"), errors="coerce")
+        df["lon"] = pd.to_numeric(df.get("lon"), errors="coerce")
 
     # 2. تعبئة أي إحداثيات مفقودة بناءً على اسم المنطقة (Area)
-    df["lat"] = df["lat"].fillna(df["Area"].map(lambda x: coords.get(x, coords["Other"])[0]))
-    df["lon"] = df["lon"].fillna(df["Area"].map(lambda x: coords.get(x, coords["Other"])[1]))
+        df["lat"] = df["lat"].fillna(df["Area"].map(lambda x: coords.get(x, coords["Other"])[0]))
+        df["lon"] = df["lon"].fillna(df["Area"].map(lambda x: coords.get(x, coords["Other"])[1]))
 
     # 3. التأكد من تحويل الأحجام لقيم رقمية بدون أخطاء
-    df["size"] = pd.to_numeric(df["Objects"], errors="coerce").fillna(1) * 30
+        df["size"] = pd.to_numeric(df["Objects"], errors="coerce").fillna(1) * 30
 
     # 4. رسم الخريطة بأمان
-    st.map(df, latitude="lat", longitude="lon", size="size", zoom=10)
+        st.map(df, latitude="lat", longitude="lon", size="size", zoom=10)
     
     
     # الرسم البياني 
