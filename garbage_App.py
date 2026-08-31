@@ -323,7 +323,9 @@ elif page == "📊 Analytics Dashboard":
     if not df.empty:
         df["lat"] = df["Area"].map(lambda x: coords.get(x, (26.2285, 50.5860))[0])
         df["lon"] = df["Area"].map(lambda x: coords.get(x, (26.2285, 50.5860))[1])
-        st.map(df[["lat", "lon"]], zoom=10)
+        df["size"] = df["Objects"] * 30
+        st.map(df, latitude="lat", longitude="lon", size="size", zoom=10)
+
     
     # الرسم البياني 
     col_a, col_b = st.columns(2)
