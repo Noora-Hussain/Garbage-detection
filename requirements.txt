@@ -6,4 +6,4 @@ numpy
 Pillow
 streamlit-webrtc
 av
-exifread
+streamlit-geolocation
