@@ -150,8 +150,37 @@ if page == "🛣️ Street Detection":
     source_type = st.radio("Source", ["📷 Image Upload", "🎥 Live Camera"], horizontal=True)
  
   
-    if:  # 📷 Image Upload
+    if source_type == "📷 Image Upload":  # 📷 Image Upload
         img_file = st.file_uploader("Upload Image", type=["jpg", "png", "jpeg"])
+
+        if img_file is not None:
+            image = Image.open(img_file).convert("RGB")
+            with st.spinner("AI is analyzing..."):
+                model = load_my_model()
+                res = model.predict(image, conf=confidence, verbose=False)[0]
+
+                # يقسم الشاشة لقسمين: عمود للصورة الأصلية وعمود للنتيجة بعد التحديد
+                col1, col2 = st.columns(2)
+                with col1:
+                    st.image(image, caption="Original Image", use_container_width=True)
+                with col2:
+                    # channels="BGR" عشان الألوان تطلع صحيحة (res.plot ترجع BGR)
+                    st.image(res.plot(), caption="AI Detection Result", use_container_width=True, channels="BGR")
+
+                items = count_detected_objects(res)
+                if items:
+                    found_types = sorted(set(i["Garbage"] for i in items))
+                    st.warning(f"⚠️ Garbage found! Type(s): {', '.join(found_types)}")
+                    st.dataframe(pd.DataFrame(items), use_container_width=True, hide_index=True)
+                else:
+                    st.success("✅ Clean street! No significant garbage detected.")
+
+            if items:
+                default_desc = "Recycle properly."
+                for i in items:
+                    name = i["Garbage"]
+                    desc_text = GARBAGE_DESCRIPTIONS.get(name, default_desc)
+                    st.info(f"**{name}**: {desc_text}")
  
         if img_file is not None:
             image = Image.open(img_file).convert("RGB")
