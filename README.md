@@ -44,11 +44,11 @@ A confusion matrix (generated in the notebook) further shows where the model con
 
 garbage_App.py : an interactive dashboard with four pages, navigable from the sidebar:
 
-Street Detection — Upload an image or stream live camera video; the model draws bounding boxes around detected garbage and lists the types found in real time.
+Street Detection : Upload an image or stream live camera video; the model draws bounding boxes around detected garbage and lists the types found in real time.
 
-Report a Dirty Area — Upload a photo of a dirty area; the app auto-detects the user's location, runs detection on the image, calculates a priority level (🔴 High / 🟠 Medium / 🟢 Low) based on how much garbage is found, and lets the user submit a GPS-tagged report.
+Report a Dirty Area : Upload a photo of a dirty area; the app auto-detects the user's location, runs detection on the image, calculates a priority level (🔴 High / 🟠 Medium / 🟢 Low) based on how much garbage is found, and lets the user submit a GPS-tagged report.
 
-Analytics Dashboard — A live map of all submitted reports, charts showing report distribution by area, a table of high-priority hotspots, and an admin panel to mark reports as resolved.
+Analytics Dashboard : A live map of all submitted reports, charts showing report distribution by area, a table of high-priority hotspots, and an admin panel to mark reports as resolved.
 
 Report Generation — Filter reports by period (Today / Last 7 Days / All) and export them as a CSV file.
 
