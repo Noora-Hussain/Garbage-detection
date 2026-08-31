@@ -11,9 +11,7 @@ import folium
 from streamlit_folium import st_folium
 from streamlit_webrtc import webrtc_streamer, VideoProcessorBase, RTCConfiguration
 import av
-
-from streamlit_webrtc import RTCConfiguration, webrtc_streamer
-
+ 
 st.set_page_config(page_title="EcoVision | Smart Waste Detection", page_icon="♻️", layout="wide", initial_sidebar_state="expanded")
  
 st.markdown("""
