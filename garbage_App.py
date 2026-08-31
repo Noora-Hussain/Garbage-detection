@@ -129,31 +129,6 @@ def update_report_status(report_id, new_status):
     df.loc[df["ID"] == report_id, "Status"] = new_status
     df.to_csv(CSV_FILE, index=False)
  
-# ============================================================
-# WebRTC: معالج الفيديو الحي - يشتغل على كل فريم يجي من الكاميرا
-# ============================================================
-RTC_CONFIGURATION = RTCConfiguration(
-    {"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]}
-)
- 
-class YOLOProcessor(VideoProcessorBase):
-    def __init__(self):
-        # يحمل الموديل مرة وحدة لكل جلسة اتصال (session)
-        self.model = load_my_model()
-        self.confidence = 0.25  # قيمة افتراضية، تنحدث من السلايدر بالخارج
- 
-    def recv(self, frame):
-        # يحول الفريم لمصفوفة numpy بصيغة BGR (طبيعية للفيديو)
-        img = frame.to_ndarray(format="bgr24")
- 
-        # اليولو يتوقع RGB فنقلب الترتيب قبل الإرسال للموديل
-        res = self.model.predict(img[..., ::-1], conf=self.confidence, verbose=False)[0]
- 
-        # res.plot() ترجع صورة بصيغة BGR أصلاً، فتطابق format="bgr24" مباشرة
-        annotated = res.plot()
- 
-        return av.VideoFrame.from_ndarray(annotated, format="bgr24")
- 
 with st.sidebar:
     st.markdown("## ♻️ EcoVision")
     st.caption("Smart Waste Detection")
@@ -174,22 +149,8 @@ if page == "🛣️ Street Detection":
     # خيارين بس الحين: رفع صورة، أو كاميرا لايف مباشرة (بدل صورة واحدة من الكاميرا)
     source_type = st.radio("Source", ["📷 Image Upload", "🎥 Live Camera"], horizontal=True)
  
-    if source_type == "🎥 Live Camera":
-        st.info("📡 اضغط START وسمح للمتصفح بالوصول للكاميرا عشان يبدأ الكشف اللحظي")
- 
-        # webrtc_streamer يفتح اتصال مباشر بين المتصفح والسيرفر ويمرر كل فريم لـ YOLOProcessor
-        ctx = webrtc_streamer(
-            key="live-detection",
-            video_processor_factory=YOLOProcessor,
-            rtc_configuration=RTC_CONFIGURATION,
-            media_stream_constraints={"video": True, "audio": False},
-        )
- 
-        # تحديث قيمة الثقة (confidence) بالمعالج كل مرة يتغير فيها السلايدر
-        if ctx.video_processor:
-            ctx.video_processor.confidence = confidence
- 
-    else:  # 📷 Image Upload
+  
+    if:  # 📷 Image Upload
         img_file = st.file_uploader("Upload Image", type=["jpg", "png", "jpeg"])
  
         if img_file is not None:
