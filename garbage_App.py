@@ -1,5 +1,6 @@
 # Imports
 import os
+import cv2
 import numpy as np
 import pandas as pd
 import streamlit as st
@@ -136,55 +137,90 @@ with st.sidebar:
     page = st.radio("Navigation", page_options)
 
     st.markdown("---")
-    confidence = st.slider("AI Confidence Threshold", 0.10, 0.90, 0.45, 0.05)
+    confidence = st.slider("AI Confidence Threshold", 0.10, 0.90, 0.25, 0.05)
 
-# STREET DETECTION 
+# STREET DETECTION (LIVE OPENCV STREAM INCLUDED)
 
 if page == "🛣️ Street Detection":
     st.markdown("## 🛣️ Street Garbage Detection")
-    st.write("Analyze street footage with optimized AI thresholding to avoid false detections.")
+    st.write("Analyze street footage in real-time with AI bounding boxes.")
 
-    # وجود زرين لرفع صورة او كاميرا لايف
-    source_type = st.radio("Source", ["📷 Image Upload", "📸 Live Camera"], horizontal=True)
+    # وجود زرين لرفع صورة أو تشغيل بث مباشر
+    source_type = st.radio("Source", ["📷 Image Upload", "🎥 Live Video Camera Stream"], horizontal=True)
 
-    # في حال رفع صورة لازم تكون jpg", "png", "jpeg واذا ما كانت برفضها 
-    img_file = None
     if source_type == "📷 Image Upload":
         img_file = st.file_uploader("Upload Image", type=["jpg", "png", "jpeg"])
-    else:
-        img_file = st.camera_input("Take a photo to process live detection")
-
-    if img_file is not None:
-        image = Image.open(img_file).convert("RGB")
-        with st.spinner("AI is analyzing and filtering noise..."):
-            model = load_my_model()
-            res = model.predict(image, conf=confidence, verbose=False)[0]
+        if img_file is not None:
+            image = Image.open(img_file).convert("RGB")
+            with st.spinner("AI is analyzing..."):
+                model = load_my_model()
+                res = model.predict(image, conf=confidence, verbose=False)[0]
                 
-            # يقسم الشاشة لقسمين عمود للصورة الاصلية و عمود للصورة بعد تحديد المربعات
-            col1, col2 = st.columns(2)
-            with col1:
-                st.image(image, caption="Original Image")
-            with col2:
-                st.image(res.plot()[:, :, ::-1], caption="AI Filtered Detection", use_container_width=True) 
+                # يقسم الشاشة لقسمين: عمود للصورة الأصلية وعمود للنتيجة بعد التحديد
+                col1, col2 = st.columns(2)
+                with col1:
+                    st.image(image, caption="Original Image", use_container_width=True)
+                with col2:
+                    st.image(res.plot(), caption="AI Detection Result", use_container_width=True)
 
-            # يحسب عدد الاجسام المكتشفة و اذا وجد يعرض تحذير واذا م وجد يعرض رسالة ان الشارع نظيف 
-            items = count_detected_objects(res)
+                items = count_detected_objects(res)
+                if items:
+                    found_types = sorted(set(i["Garbage"] for i in items))
+                    st.warning(f"⚠️ Garbage found! Type(s): {', '.join(found_types)}")
+                    st.dataframe(pd.DataFrame(items), use_container_width=True, hide_index=True)
+                else:
+                    st.success("✅ Clean street! No significant garbage detected.")
+                    
             if items:
-                found_types = sorted(set(i["Garbage"] for i in items))
-                st.warning(f"⚠️ Garbage found! Type(s): {', '.join(found_types)}")
-                st.dataframe(pd.DataFrame(items), use_container_width=True, hide_index=True)
+                default_desc = "Recycle properly."
+                for i in items:
+                    name = i["Garbage"]
+                    desc_text = GARBAGE_DESCRIPTIONS.get(name, default_desc)
+                    st.info(f"**{name}**: {desc_text}")
+
+    else:
+        # قسم البث الحي المباشر المعتمد على OpenCV
+        st.info("💡 اضغط على مربع الاختيار أدناه لتشغيل الكاميرا المباشرة ورسم المربعات لحظياً.")
+        run_stream = st.checkbox("🟢 تشغيل البث المباشر (Start Live Camera)")
+        
+        frame_placeholder = st.empty()
+        status_placeholder = st.empty()
+
+        if run_stream:
+            cap = cv2.VideoCapture(0)  # فتح كاميرا الجهاز المدمجة
+            model = load_my_model()
+
+            if not cap.isOpened():
+                st.error("❌ تعذر الفتح: يرجى التأكد من أن الكاميرا غيرة مستخدمة في تطبيق آخر.")
             else:
-                st.success("✅ Clean street! No significant garbage detected.")
-                
-        # التحقق من وجود قمامة واذا فيه يوصف طريقة التخلص منها 
-        if items:
-            default_desc = "Recycle properly."
-            for i in items:
-                name = i["Garbage"]
-                desc_text = GARBAGE_DESCRIPTIONS.get(name, default_desc)
-                st.info(f"**{name}**: {desc_text}")
-        else:
-            st.warning("No item recognized above confidence threshold.")
+                while run_stream:
+                    ret, frame = cap.read()
+                    if not ret:
+                        st.error("فشل التقاط البث من الكاميرا.")
+                        break
+
+                    # تحويل نظام الألوان من BGR إلى RGB
+                    frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+
+                    # إرسال الإطار للنموذج ورسم المربعات
+                    results = model.predict(frame_rgb, conf=confidence, verbose=False)[0]
+                    annotated_frame = results.plot()
+
+                    # عرض البث الحي التفاعلي
+                    frame_placeholder.image(annotated_frame, caption="Live Camera Stream with Bounding Boxes", use_container_width=True)
+
+                    # إظهار حالة الاكتشاف تحت فيديو البث مباشرة
+                    items = count_detected_objects(results)
+                    if items:
+                        types_found = ", ".join(set(i["Garbage"] for i in items))
+                        status_placeholder.warning(f"⚠️ رصد مباشر: تم اكتشاف ({len(items)}) نفايات من نوع [{types_found}]")
+                    else:
+                        status_placeholder.success("✅ البث الحي: المنطقة نظيفة حالياً.")
+
+                # تحرير الكاميرا وتفريغ الواجهة عند إيقاف التشغيل
+                cap.release()
+                frame_placeholder.empty()
+                status_placeholder.empty()
 
 # REPORT DIRTY AREA 
 elif page == "🚨 Report a Dirty Area":
@@ -205,13 +241,13 @@ elif page == "🚨 Report a Dirty Area":
         num_obj = len(items)
         found_names = ", ".join(set([i["Garbage"] for i in items])) if items else "None"
         
-        # حساب الاولوية بناء على عدد الاوساخ
+        # حساب الأولوية بناءً على عدد الأوساخ
         priority = "🔴 High" if num_obj > 5 else ("🟠 Medium" if num_obj > 2 else "🟢 Low")
         
         # تحديد رقم البلاغ
         report_id = f"Report #{1001 + len(load_reports())}"
 
-        # عرض تفاصيل البلاغ كلها
+        # عرض تفاصيل البلاغ كاملة
         st.markdown("---")
         col1, col2 = st.columns(2)
         with col1:
@@ -223,7 +259,7 @@ elif page == "🚨 Report a Dirty Area":
             st.markdown(f"🏷️ **Types:** {found_names}")
             st.markdown(f"⚡ **Priority:** {priority}")
 
-        # في حال ضغط زر البلاغ يجمع الكود كل المعلومات و يحفضها في النظام
+        # حفظ البلاغ في الملف عند ضغط الزر
         if st.button("🚀 Submit Report", type="primary"):
             new_rep = {
                 "ID": report_id, 
@@ -244,14 +280,12 @@ elif page == "🚨 Report a Dirty Area":
 elif page == "📊 Analytics Dashboard":
     st.markdown("## 📊 Analytics Dashboard & High-Density Insights")
 
-    # اخذ كل البلاغات الموجوده في النظام وحساب عددها كامل وعدد يلي انحلت
     df = load_reports()
     
     total = len(df)
     resolved = len(df[df["Status"] == "Resolved"]) if not df.empty else 0
     high_priority_count = len(df[df["Priority"] == "🔴 High"]) if not df.empty else 0
 
-    # عرض الارقام بشكل واضح
     c1, c2, c3, c4 = st.columns(4)
     c1.metric("Total Reports", total)
     c2.metric("Resolved Reports", resolved)
@@ -260,7 +294,6 @@ elif page == "📊 Analytics Dashboard":
 
     st.markdown("---")
     
-    # إضافة إحداثيات المناطق تلقائياً
     st.markdown("### 🗺️ Live Reports Map")
     if not df.empty:
         df["lat"] = pd.to_numeric(df.get("lat"), errors="coerce")
@@ -282,14 +315,12 @@ elif page == "📊 Analytics Dashboard":
 
         st_folium(m, use_container_width=True, height=400)
     
-    # الرسم البياني 
     col_a, col_b = st.columns(2)
     with col_a:
         st.markdown("### 📈 Reports Distribution by Area")
         if not df.empty:
             st.bar_chart(df["Area"].value_counts())
             
-    # جدول الاماكن يلي اولويتها عالية 
     with col_b:
         st.markdown("### 🚨 High-Density Garbage Hotspots")
         if not df.empty and "Priority" in df.columns:
@@ -299,7 +330,6 @@ elif page == "📊 Analytics Dashboard":
             else:
                 st.info("No high-density critical hotspots reported yet.")
 
-    # تحديث وإدارة حالة البلاغات
     st.markdown("---")
     st.markdown("### 🛠️ Admin Status Manager")
     if not df.empty:
@@ -315,12 +345,9 @@ elif page == "📊 Analytics Dashboard":
 
 # REPORT GENERATION
 elif page == "📄 Report Generation":
-    
-    # يسوي جدول كامل يعرض البلاغات 
     st.markdown("## 📄 Report Generation")
     df = load_reports()
 
-    # فلترة يومي/أسبوعي
     period = st.radio("Report Period", ["Today", "Last 7 Days", "All"], horizontal=True)
 
     if period != "All" and not df.empty:
