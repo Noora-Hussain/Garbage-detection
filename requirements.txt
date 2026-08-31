@@ -1,12 +1,10 @@
 streamlit
-numpy
 pandas
 pillow
-ultralytics
-opencv-python-headless
-streamlit-webrtc
-streamlit-geolocation
 folium
 streamlit-folium
-torch
-torchvision
+streamlit-webrtc
+streamlit-geolocation
+ultralytics
+opencv-python-headless
+av
