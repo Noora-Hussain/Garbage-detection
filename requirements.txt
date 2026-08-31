@@ -2,3 +2,6 @@ streamlit
 numpy<2.0.0
 opencv-python-headless
 ultralytics
+streamlit-folium
+streamlit-webrtc
+streamlit-geolocation
