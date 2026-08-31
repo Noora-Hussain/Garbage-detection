@@ -6,8 +6,6 @@ import streamlit as st
 from PIL import Image
 from ultralytics import YOLO
 from datetime import datetime
-import av
-from streamlit_webrtc import webrtc_streamer, VideoProcessorBase, RTCConfiguration
 from streamlit_geolocation import streamlit_geolocation
 import folium
 from streamlit_folium import st_folium
@@ -124,6 +122,11 @@ def add_report(new_report_dict):
     updated_df = pd.concat([df, pd.DataFrame([new_report_dict])], ignore_index=True)
     updated_df.to_csv(CSV_FILE, index=False)
 
+def update_report_status(report_id, new_status):
+    df = load_reports()
+    df.loc[df["ID"] == report_id, "Status"] = new_status
+    df.to_csv(CSV_FILE, index=False)
+
 with st.sidebar:
     st.markdown("## ♻️ EcoVision")
     st.caption("Smart Waste Detection")
@@ -137,15 +140,6 @@ with st.sidebar:
 
 # STREET DETECTION 
 
-RTC_CONFIGURATION = RTCConfiguration(
-    {"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]}) 
-
-class YOLOProcessor(VideoProcessorBase):
-    def recv(self, frame):
-        img = frame.to_ndarray(format="bgr24")
-        results = load_my_model().predict(img, conf=0.45, verbose=False)[0]
-        return av.VideoFrame.from_ndarray(results.plot(), format="bgr24")
-
 if page == "🛣️ Street Detection":
     st.markdown("## 🛣️ Street Garbage Detection")
     st.write("Analyze street footage with optimized AI thresholding to avoid false detections.")
@@ -158,8 +152,7 @@ if page == "🛣️ Street Detection":
     if source_type == "📷 Image Upload":
         img_file = st.file_uploader("Upload Image", type=["jpg", "png", "jpeg"])
     else:
-        st.info("Allow camera access to start live detection.")
-        webrtc_streamer(key="live-detection", video_processor_factory=YOLOProcessor)
+        img_file = st.camera_input("Take a photo to process live detection")
 
     if img_file is not None:
         image = Image.open(img_file).convert("RGB")
@@ -306,6 +299,20 @@ elif page == "📊 Analytics Dashboard":
             else:
                 st.info("No high-density critical hotspots reported yet.")
 
+    # تحديث وإدارة حالة البلاغات
+    st.markdown("---")
+    st.markdown("### 🛠️ Admin Status Manager")
+    if not df.empty:
+        pending_reports = df[df["Status"] != "Resolved"]["ID"].tolist()
+        if pending_reports:
+            selected_rep = st.selectbox("Select Pending Report to Resolve:", pending_reports)
+            if st.button("Mark as Resolved ✅"):
+                update_report_status(selected_rep, "Resolved")
+                st.success(f"Status of {selected_rep} updated to Resolved!")
+                st.rerun()
+        else:
+            st.info("All reported areas are currently resolved!")
+
 # REPORT GENERATION
 elif page == "📄 Report Generation":
     
@@ -316,10 +323,11 @@ elif page == "📄 Report Generation":
     # فلترة يومي/أسبوعي
     period = st.radio("Report Period", ["Today", "Last 7 Days", "All"], horizontal=True)
 
-    if period != "All":
+    if period != "All" and not df.empty:
         days = 1 if period == "Today" else 7
         cutoff = datetime.now() - pd.Timedelta(days=days)
-        df = df[pd.to_datetime(df["Date"], format="%d %b %Y") >= cutoff]
+        df["ParsedDate"] = pd.to_datetime(df["Date"], format="%d %b %Y", errors="coerce")
+        df = df[df["ParsedDate"] >= cutoff].drop(columns=["ParsedDate"])
 
     st.dataframe(df, use_container_width=True, hide_index=True)
  
