@@ -286,4 +286,10 @@ elif page == "📄 Report Generation":
         file_name="ecovision_report.csv",
         mime="text/csv",
     )
+    # إضافة: فلترة يومي/أسبوعي
+    period = st.radio("Report Period", ["Today", "Last 7 Days", "All"], horizontal=True)
 
+    if period != "All":
+        days = 1 if period == "Today" else 7
+        cutoff = datetime.now() - pd.Timedelta(days=days)
+        df = df[pd.to_datetime(df["Date"], format="%d %b %Y") >= cutoff]
