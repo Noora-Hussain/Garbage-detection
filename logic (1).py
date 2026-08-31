@@ -8,10 +8,6 @@ from streamlit_geolocation import streamlit_geolocation
 from streamlit_webrtc import VideoProcessorBase, RTCConfiguration
 import av
 
-# ============================================================
-# الثوابت (Constants)
-# ============================================================
-
 # Dictionary
 GARBAGE_DESCRIPTIONS = {
     "Glass": "Place in the designated glass recycling container.",
@@ -41,9 +37,6 @@ RTC_CONFIGURATION = RTCConfiguration(
     {"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]}
 )
 
-# ============================================================
-# دوال الموديل والكشف
-# ============================================================
 
 # يحمل ويخزن ملف الـ best عشان ما يتم اعادة تحميله في كل مرة
 @st.cache_resource
@@ -62,9 +55,6 @@ def count_detected_objects(result):
         detections.append({"Garbage": result.names[class_id], "Confidence": f"{conf * 100:.1f}%"})
     return detections
 
-# ============================================================
-# دوال الموقع الجغرافي (GPS)
-# ============================================================
 
 # دالة لتحديد اسم أقرب منطقة من الإحداثيات الحقيقية
 def get_area_name_from_coords(lat, lon):
@@ -79,7 +69,7 @@ def get_area_name_from_coords(lat, lon):
             closest_area = area
     return closest_area
 
-# تحديد الموقع تلقائياً عبر GPS بدون خيار الاختيار اليدوي
+# تحديد الموقع تلقائياً عبر GPS 
 def get_user_location():
     st.markdown("📍 **GPS Location Auto-Detection**")
     st.write("📡 Click below to fetch your current GPS location:")
@@ -96,9 +86,7 @@ def get_user_location():
         st.info("⚠️ Please allow GPS access to automatically capture your location.")
         return {"name": "Other", "lat": coords["Other"][0], "lon": coords["Other"][1]}
 
-# ============================================================
 # دوال تخزين البلاغات (CSV)
-# ============================================================
 
 def load_reports():
     if os.path.exists(CSV_FILE):
@@ -122,9 +110,8 @@ def update_report_status(report_id, new_status):
     df.loc[df["ID"] == report_id, "Status"] = new_status
     df.to_csv(CSV_FILE, index=False)
 
-# ============================================================
 # WebRTC: معالج الفيديو الحي - يشتغل على كل فريم يجي من الكاميرا
-# ============================================================
+
 
 class YOLOProcessor(VideoProcessorBase):
     def __init__(self):
