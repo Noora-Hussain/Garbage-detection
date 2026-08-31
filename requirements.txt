@@ -1,13 +1,5 @@
 streamlit
 ultralytics
 opencv-python-headless
-pandas
-numpy
-pillow
-folium
-streamlit-folium
-streamlit-geolocation
-streamlit-webrtc
-av
-libgl1
-libglib2.0-0
+torch
+torchvision
