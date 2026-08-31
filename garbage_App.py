@@ -87,11 +87,9 @@ def count_detected_objects(result):
         detections.append({"Garbage": result.names[class_id], "Confidence": f"{conf * 100:.1f}%"})
     return detections
  
-# تحديد الموقع تلقائياً عبر GPS بدون خيار الاختيار اليدوي
+# تحديد الموقع تلقائياً عبر GPS
 def get_user_location():
-    st.markdown("📍 **GPS Location Auto-Detection**")
-    st.write("📡 Click below to fetch your current GPS location:")
-    
+    st.markdown("📍 **GPS Location Auto-Detection**")    
     location = streamlit_geolocation()
  
     if location and location.get("latitude") is not None and location.get("longitude") is not None:
@@ -101,7 +99,6 @@ def get_user_location():
         st.success(f"📍 Location Captured: {area_name} ({lat:.4f}, {lon:.4f})")
         return {"name": area_name, "lat": lat, "lon": lon}
     else:
-        st.info("⚠️ Please allow GPS access to automatically capture your location.")
         return {"name": "Other", "lat": coords["Other"][0], "lon": coords["Other"][1]}
  
 # CSV يخزن البلاغات عشان ما تختفي
