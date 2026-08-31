@@ -21,7 +21,7 @@ rtc_config = RTCConfiguration({
             ]
         })
         
-        ctx = webrtc_streamer(
+ctx = webrtc_streamer(
             key="yolo-live-detection",
             video_processor_factory=YOLOVideoProcessor,
             rtc_configuration=rtc_config,
