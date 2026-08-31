@@ -333,13 +333,20 @@ elif page == "📊 Analytics Dashboard":
     map_title = "### 🗺️ Live Reports Map" if lang == "English" else "### 🗺️ خريطة البلاغات المباشرة"
     st.markdown(map_title)
     if not df.empty:
-        # لو التقرير فيه lat/lon محفوظة نستخدمها، وإلا نرجع لـ coords القديمة
-        if "lat" not in df.columns or "lon" not in df.columns:
-            df["lat"] = df["Area"].map(lambda x: coords.get(x, (26.2285, 50.5860))[0])
-            df["lon"] = df["Area"].map(lambda x: coords.get(x, (26.2285, 50.5860))[1])
+    # 1. تحويل الأعمدة إلى قيم رقمية وتنظيف القيم المفقودة
+    df["lat"] = pd.to_numeric(df.get("lat"), errors="coerce")
+    df["lon"] = pd.to_numeric(df.get("lon"), errors="coerce")
 
-        df["size"] = df["Objects"] * 30
-        st.map(df, latitude="lat", longitude="lon", size="size", zoom=10)
+    # 2. تعبئة أي إحداثيات مفقودة بناءً على اسم المنطقة (Area)
+    df["lat"] = df["lat"].fillna(df["Area"].map(lambda x: coords.get(x, coords["Other"])[0]))
+    df["lon"] = df["lon"].fillna(df["Area"].map(lambda x: coords.get(x, coords["Other"])[1]))
+
+    # 3. التأكد من تحويل الأحجام لقيم رقمية بدون أخطاء
+    df["size"] = pd.to_numeric(df["Objects"], errors="coerce").fillna(1) * 30
+
+    # 4. رسم الخريطة بأمان
+    st.map(df, latitude="lat", longitude="lon", size="size", zoom=10)
+    
     
     # الرسم البياني 
     col_a, col_b = st.columns(2)
