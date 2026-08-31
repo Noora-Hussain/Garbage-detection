@@ -13,15 +13,6 @@ from streamlit_webrtc import webrtc_streamer, VideoProcessorBase, RTCConfigurati
 import av
 import cv2
 
-[turns]
-urls = [
- "turns:global.relay.metered.ca:80",
-"turns:global.relay.metered.ca:80?transport=tcp",
- "turns:global.relay.metered.ca:443",
-"turns:global.relay.metered.ca:443?transport=tcp"]
-
-username =  "bdec4905eb8eaaa33b8aa1e4"
-credential = "euaq/TCzIAMInxyy"
 st.set_page_config(page_title="EcoVision | Smart Waste Detection", page_icon="♻️", layout="wide", initial_sidebar_state="expanded")
 
 st.markdown("""
@@ -199,9 +190,19 @@ if page == "🛣️ Street Detection":
             rtc_configuration=rtc_config,
             media_stream_constraints={"video": True, "audio": False}
         )
+        
+        
+    [turns]
+    urls = [
+     "turns:global.relay.metered.ca:80",
+    "turns:global.relay.metered.ca:80?transport=tcp",
+     "turns:global.relay.metered.ca:443",
+    "turns:global.relay.metered.ca:443?transport=tcp"]
 
-        if ctx.video_processor:
-            ctx.video_processor.conf = confidence
+    username =  "bdec4905eb8eaaa33b8aa1e4"
+    credential = "euaq/TCzIAMInxyy"
+            if ctx.video_processor:
+                ctx.video_processor.conf = confidence
 
 # REPORT DIRTY AREA 
 elif page == "🚨 Report a Dirty Area":
