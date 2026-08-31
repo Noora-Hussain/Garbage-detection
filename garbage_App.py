@@ -182,17 +182,17 @@ if page == "🛣️ Street Detection":
     username ="bdec4905eb8eaaa33b8aa1e4"
     credential ="euaq/TCzIAMInxyy"
     
-    elif source_type == "🎥 Live Camera":
-        st.info("Click **START** below to enable webcam detection.")
+elif source_type == "🎥 Live Camera":
+    st.info("Click **START** below to enable webcam detection.")
         
         # إعدادات WebRTC وتمرير نسبة الثقة (Confidence) للمعالج
-        rtc_config = RTCConfiguration({"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]})
+    rtc_config = RTCConfiguration({"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]})
         
-        ctx = webrtc_streamer(
-            key="yolo-live-detection",
-            video_processor_factory=YOLOVideoProcessor,
-            rtc_configuration=rtc_config,
-            media_stream_constraints={"video": True, "audio": False}
+    ctx = webrtc_streamer(
+        key="yolo-live-detection",
+        video_processor_factory=YOLOVideoProcessor,
+        rtc_configuration=rtc_config,
+        media_stream_constraints={"video": True, "audio": False}
         )
 
 # REPORT DIRTY AREA 
