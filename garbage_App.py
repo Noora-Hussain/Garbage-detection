@@ -45,6 +45,14 @@ GARBAGE_DESCRIPTIONS = {
     "General Waste": "Place in the general waste bin for non-recyclable items.",
 }
 
+GARBAGE_DESCRIPTIONS_AR = {
+    "Glass": "ضعها في حاوية الزجاج المخصصة.",
+    "Metal": "ضعها في حاوية إعادة تدوير المعادن.",
+    "Paper": "ضعها في حاوية الورق المخصصة.",
+    "Plastic": "ضعها في حاوية البلاستيك.",
+    "General Waste": "ضعها في حاوية النفايات العامة.",
+}
+
 # إحداثيات المناطق للخريطة التفاعلية
 coords = {
     "Manama": (26.2285, 50.5860),
