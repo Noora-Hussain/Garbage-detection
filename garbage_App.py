@@ -13,7 +13,7 @@ st.set_page_config(page_title="EcoVision | Smart Waste Detection", page_icon="�
 
 with st.sidebar:
     lang = st.radio("🌐 Language / اللغة", ["English", "العربية"], horizontal=True)
-    
+
 st.markdown("""
 <style>
     .stApp { background-color: #F4F7F5; }
@@ -85,14 +85,20 @@ def count_detected_objects(result):
 
 # لتحديد الموقع و تحديد مكان البلاغ بدقة Checkbox تعرض للمستخدم خيار ال
 def choose_area_menu(unique_key):
-    st.markdown("📍 **Location & GPS Source**")
-    use_gps = st.checkbox("Use Simulated GPS Coordinates", value=True, key=f"gps_{unique_key}")
+    st.markdown("📍 **Location & GPS Source**" if lang == "English" else "📍 **الموقع ومصدر GPS**")
+    use_gps = st.checkbox(
+        "Use Simulated GPS Coordinates" if lang == "English" else "استخدام إحداثيات GPS تجريبية",
+        value=True, key=f"gps_{unique_key}"
+    )
     
     # اذا المستخدم اختار تحديد الموقع نحطه و اذا م اختار نحط ليه قائمة المناطق يختار منها 
     if use_gps:
         return "Manama (GPS)"
     
-    selected = st.selectbox("Area:", ["Manama", "Muharraq", "Riffa", "Other"], key=unique_key)
+    selected = st.selectbox(
+        "Area:" if lang == "English" else "المنطقة:",
+        ["Manama", "Muharraq", "Riffa", "Other"], key=unique_key
+    )
     return selected
 
 # CSV يخزن البلاغات عشان ما تختفي
@@ -117,15 +123,23 @@ def add_report(new_report_dict):
 
 with st.sidebar:
     st.markdown("## ♻️ EcoVision")
-    st.caption("Smart Waste Detection")
+    st.caption("Smart Waste Detection" if lang == "English" else "كشف ذكي للنفايات")
     st.markdown("---")
 
-    page = st.radio(
-        "Navigation",
-        ["🛣️ Street Detection", "🚨 Report a Dirty Area", "📊 Analytics Dashboard" ,  "📄 Report Generation"])
+    page_options_en = ["🛣️ Street Detection", "🚨 Report a Dirty Area", "📊 Analytics Dashboard", "📄 Report Generation"]
+    page_options_ar = ["🛣️ كشف الشوارع", "🚨 الإبلاغ عن منطقة متسخة", "📊 لوحة التحليلات", "📄 إنشاء التقارير"]
+
+    nav_label = "Navigation" if lang == "English" else "التنقل"
+    page_options = page_options_en if lang == "English" else page_options_ar
+    page_choice = st.radio(nav_label, page_options)
+
+    # نحول اختيار المستخدم لمفتاح إنجليزي موحّد يستخدمه باقي الكود
+    page_index = page_options.index(page_choice)
+    page = page_options_en[page_index]
 
     st.markdown("---")
-    confidence = st.slider("AI Confidence Threshold", 0.10, 0.90, 0.45, 0.05, )
+    confidence_label = "AI Confidence Threshold" if lang == "English" else "درجة ثقة الذكاء الاصطناعي"
+    confidence = st.slider(confidence_label, 0.10, 0.90, 0.45, 0.05)
 
 # STREET DETECTION 
 
@@ -139,73 +153,102 @@ class YOLOProcessor(VideoProcessorBase):
         return av.VideoFrame.from_ndarray(results.plot(), format="bgr24")
 
 if page == "🛣️ Street Detection":
-    st.markdown("## 🛣️ Street Garbage Detection")
-    st.write("Analyze street footage with optimized AI thresholding to avoid false detections.")
+    title = "🛣️ Street Garbage Detection" if lang == "English" else "🛣️ كشف القمامة في الشوارع"
+    desc = ("Analyze street footage with optimized AI thresholding to avoid false detections."
+            if lang == "English" else
+            "تحليل صور الشوارع باستخدام الذكاء الاصطناعي لتجنب الأخطاء في الكشف.")
+    st.markdown(f"## {title}")
+    st.write(desc)
 
     # وجود زرين لرفع صورة او كاميرا لايف
-    source_type = st.radio("Source", ["📷 Image Upload", "📸 Live Camera"], horizontal=True)
+    source_label = "Source" if lang == "English" else "المصدر"
+    source_options_en = ["📷 Image Upload", "📸 Live Camera"]
+    source_options_ar = ["📷 رفع صورة", "📸 كاميرا مباشرة"]
+    source_options = source_options_en if lang == "English" else source_options_ar
+    source_choice = st.radio(source_label, source_options, horizontal=True)
+    source_type = source_options_en[source_options.index(source_choice)]
 
     # في حال رفع صورة لازم تكون jpg", "png", "jpeg واذا ما كانت برفضها 
     img_file = None
     if source_type == "📷 Image Upload":
-        img_file = st.file_uploader("Upload Image", type=["jpg", "png", "jpeg"])
+        upload_label = "Upload Image" if lang == "English" else "ارفعي صورة"
+        img_file = st.file_uploader(upload_label, type=["jpg", "png", "jpeg"])
      
     else:
-        st.info("Allow camera access to start live detection.")
+        info_msg = "Allow camera access to start live detection." if lang == "English" else "اسمحي بالوصول للكاميرا لبدء الكشف المباشر."
+        st.info(info_msg)
         webrtc_streamer(key="live-detection", video_processor_factory=YOLOProcessor)
 
     if img_file is not None:
         image = Image.open(img_file).convert("RGB")
-        with st.spinner("AI is analyzing and filtering noise"):
+        spinner_msg = "AI is analyzing and filtering noise" if lang == "English" else "الذكاء الاصطناعي يحلل الصورة الآن"
+        with st.spinner(spinner_msg):
             model = load_my_model()
             res = model.predict(image, conf=confidence, verbose=False)[0]
                 
             # يقسم الشاشة لقسمين عمود للصورة الاصلية و عمود للصورة بعد تحديد المربعات
             col1, col2 = st.columns(2)
             with col1:
-                st.image(image, caption="Original")
+                cap1 = "Original" if lang == "English" else "الصورة الأصلية"
+                st.image(image, caption=cap1)
             with col2:
-                st.image(res.plot()[:, :, ::-1], caption="AI Filtered Detection", use_container_width=True) 
+                cap2 = "AI Filtered Detection" if lang == "English" else "نتيجة الكشف بالذكاء الاصطناعي"
+                st.image(res.plot()[:, :, ::-1], caption=cap2, use_container_width=True) 
 
             # يحسب عدد الاجسام المكتشفة و اذا وجد يعرض تحذير واذا م وجد يعرض رسالة ان الشارع نظيف 
             items = count_detected_objects(res)
             if items:
                 found_types = sorted(set(i["Garbage"] for i in items))
-                st.warning(f"⚠️ Garbage found! Type(s): {', '.join(found_types)}")
+                warn_msg = (f"⚠️ Garbage found! Type(s): {', '.join(found_types)}"
+                            if lang == "English" else
+                            f"⚠️ تم العثور على قمامة! النوع: {', '.join(found_types)}")
+                st.warning(warn_msg)
                 st.dataframe(pd.DataFrame(items), use_container_width=True, hide_index=True)
             else:
-                st.success("✅ Clean street! No significant garbage detected.")
+                clean_msg = "✅ Clean street! No significant garbage detected." if lang == "English" else "✅ الشارع نظيف! لم يتم رصد قمامة."
+                st.success(clean_msg)
                 
         # التحقق من وجود قمامة واذا فيه يوصف طريقة التخلص منها 
         if items:
+            desc_dict = GARBAGE_DESCRIPTIONS if lang == "English" else GARBAGE_DESCRIPTIONS_AR
+            default_desc = "Recycle properly." if lang == "English" else "أعيدي تدويرها بالشكل الصحيح."
             for i in items:
                 name = i["Garbage"]
-                desc = GARBAGE_DESCRIPTIONS.get(name, "Recycle properly.")
-                st.info(f"**{name}**: {desc}")
+                desc_text = desc_dict.get(name, default_desc)
+                st.info(f"**{name}**: {desc_text}")
         else:
-            st.warning("No item recognized above confidence threshold.")
+            warn2 = "No item recognized above confidence threshold." if lang == "English" else "لم يتم التعرف على أي عنصر ضمن نسبة الثقة المحددة."
+            st.warning(warn2)
 
 # REPORT DIRTY AREA 
 elif page == "🚨 Report a Dirty Area":
-    st.markdown("## 🚨 Report a Dirty Area with GPS Tagging")
+    title = "🚨 Report a Dirty Area with GPS Tagging" if lang == "English" else "🚨 الإبلاغ عن منطقة متسخة مع تحديد الموقع"
+    st.markdown(f"## {title}")
     
     chosen_area = choose_area_menu("report_area")
-    img_file = st.file_uploader("Upload Area Photo", type=["jpg", "png", "jpeg"])
+    upload_label2 = "Upload Area Photo" if lang == "English" else "ارفعي صورة المنطقة"
+    img_file = st.file_uploader(upload_label2, type=["jpg", "png", "jpeg"])
 
     if img_file is not None:
         image = Image.open(img_file).convert("RGB")
 
-        with st.spinner("Analyzing area & priority..."):
+        spinner2 = "Analyzing area & priority..." if lang == "English" else "جاري تحليل المنطقة وتحديد الأولوية..."
+        with st.spinner(spinner2):
             model = load_my_model()
             res = model.predict(image, conf=confidence, verbose=False)[0]
 
         # يحسب عدد قطع النفايات اللي لقاها الموديل في الصورة
         items = count_detected_objects(res)
         num_obj = len(items)
-        found_names = ", ".join(set([i["Garbage"] for i in items])) if items else "None"
+        none_txt = "None" if lang == "English" else "لا يوجد"
+        found_names = ", ".join(set([i["Garbage"] for i in items])) if items else none_txt
         
-        #  حساب الاولوية بناء على عدد الاوساخ
+        #  حساب الاولوية بناء على عدد الاوساخ (نخليها إنجليزي داخليًا عشان باقي الكود يقارن عليها بدون مشاكل)
         priority = "🔴 High" if num_obj > 5 else ("🟠 Medium" if num_obj > 2 else "🟢 Low")
+        priority_display = priority
+        if lang == "العربية":
+            priority_map = {"🔴 High": "🔴 عالية", "🟠 Medium": "🟠 متوسطة", "🟢 Low": "🟢 منخفضة"}
+            priority_display = priority_map[priority]
         
         # تحديد رقم البلاغ
         report_id = f"Report #{1001 + len(load_reports())}"
@@ -214,33 +257,43 @@ elif page == "🚨 Report a Dirty Area":
         st.markdown("---")
         col1, col2 = st.columns(2)
         with col1:
-            st.image(image, caption="Evidence Image", use_container_width=True)
+            cap3 = "Evidence Image" if lang == "English" else "صورة الإثبات"
+            st.image(image, caption=cap3, use_container_width=True)
         with col2:
             st.markdown(f"### **{report_id}**")
-            st.markdown(f"📍 **Location:** {chosen_area}")
-            st.markdown(f"🗑️ **Count:** {num_obj}")
-            st.markdown(f"🏷️ **Types:** {found_names}")
-            st.markdown(f"⚡ **Priority:** {priority}")
+            if lang == "English":
+                st.markdown(f"📍 **Location:** {chosen_area}")
+                st.markdown(f"🗑️ **Count:** {num_obj}")
+                st.markdown(f"🏷️ **Types:** {found_names}")
+                st.markdown(f"⚡ **Priority:** {priority_display}")
+            else:
+                st.markdown(f"📍 **الموقع:** {chosen_area}")
+                st.markdown(f"🗑️ **العدد:** {num_obj}")
+                st.markdown(f"🏷️ **الأنواع:** {found_names}")
+                st.markdown(f"⚡ **الأولوية:** {priority_display}")
 
         # في حال ضغط زر البلاغ يجمع الكود كل المعلومات و يحفضها في النظام
-        if st.button("🚀 Submit Report", type="primary"):
+        submit_label = "🚀 Submit Report" if lang == "English" else "🚀 إرسال البلاغ"
+        if st.button(submit_label, type="primary"):
             new_rep = {
                 "ID": report_id, 
                 "Area": chosen_area, 
                 "Objects": num_obj,
-                "Priority": priority, 
+                "Priority": priority,   # نخزن دايمًا بالإنجليزي بالملف عشان الفلاتر ما تنكسر
                 "Date": datetime.now().strftime("%d %b %Y"), 
                 "Status": "Pending Review",
                 "Details": found_names
             }
             add_report(new_rep)
-            st.success(f"Report {report_id} successfully submitted and saved!")
+            success_msg = f"Report {report_id} successfully submitted and saved!" if lang == "English" else f"تم إرسال وحفظ البلاغ {report_id} بنجاح!"
+            st.success(success_msg)
 
 
 # ANALYTICS DASHBOARD 
 
 elif page == "📊 Analytics Dashboard":
-    st.markdown("## 📊 Analytics Dashboard & High-Density Insights")
+    title = "📊 Analytics Dashboard & High-Density Insights" if lang == "English" else "📊 لوحة التحليلات والبيانات"
+    st.markdown(f"## {title}")
 
     # اخذ كل البلاغات الموجوده في النظام وحساب عددها كامل وعدد يلي انحلت
     df = load_reports()
@@ -251,15 +304,22 @@ elif page == "📊 Analytics Dashboard":
 
     # عرض الارقام بشكل واضح
     c1, c2, c3, c4 = st.columns(4)
-    c1.metric("Total Reports", total)
-    c2.metric("Resolved Reports", resolved)
-    c3.metric("High-Density Areas", high_priority_count, help="Areas with heavy waste concentration")
-    c4.metric("Active Regions", df["Area"].nunique() if not df.empty else 0)
+    if lang == "English":
+        c1.metric("Total Reports", total)
+        c2.metric("Resolved Reports", resolved)
+        c3.metric("High-Density Areas", high_priority_count, help="Areas with heavy waste concentration")
+        c4.metric("Active Regions", df["Area"].nunique() if not df.empty else 0)
+    else:
+        c1.metric("إجمالي البلاغات", total)
+        c2.metric("البلاغات المحلولة", resolved)
+        c3.metric("مناطق عالية الكثافة", high_priority_count, help="مناطق فيها تركيز كبير من النفايات")
+        c4.metric("المناطق النشطة", df["Area"].nunique() if not df.empty else 0)
 
     st.markdown("---")
     
-# إضافة إحداثيات المناطق تلقائياً
-    st.markdown("### 🗺️ Live Reports Map")
+    # إضافة إحداثيات المناطق تلقائياً
+    map_title = "### 🗺️ Live Reports Map" if lang == "English" else "### 🗺️ خريطة البلاغات المباشرة"
+    st.markdown(map_title)
     if not df.empty:
         df["lat"] = df["Area"].map(lambda x: coords.get(x, (26.2285, 50.5860))[0])
         df["lon"] = df["Area"].map(lambda x: coords.get(x, (26.2285, 50.5860))[1])
@@ -268,29 +328,38 @@ elif page == "📊 Analytics Dashboard":
     # الرسم البياني 
     col_a, col_b = st.columns(2)
     with col_a:
-        st.markdown("### 📈 Reports Distribution by Area")
+        chart_title = "### 📈 Reports Distribution by Area" if lang == "English" else "### 📈 توزيع البلاغات حسب المنطقة"
+        st.markdown(chart_title)
         if not df.empty:
             st.bar_chart(df["Area"].value_counts())
             
      # جدول الاماكن يلي اولويتها عالية    
     with col_b:
-        st.markdown("### 🚨 High-Density Garbage Hotspots")
+        hotspot_title = "### 🚨 High-Density Garbage Hotspots" if lang == "English" else "### 🚨 المناطق شديدة التلوث"
+        st.markdown(hotspot_title)
         if not df.empty and "Priority" in df.columns:
             hotspots = df[df["Priority"] == "🔴 High"]
             if not hotspots.empty:
                 st.dataframe(hotspots[["ID", "Area", "Objects", "Date", "Status"]], use_container_width=True, hide_index=True)
             else:
-                st.info("No high-density critical hotspots reported yet.")
+                no_hotspot = "No high-density critical hotspots reported yet." if lang == "English" else "لا توجد مناطق حرجة عالية الكثافة حتى الآن."
+                st.info(no_hotspot)
 
     # Report Generation
 elif page == "📄 Report Generation":
     
     # يسوي جدول كامل يعرض البلاغات 
-    st.markdown("## 📄 Report Generation")
+    title = "📄 Report Generation" if lang == "English" else "📄 إنشاء التقارير"
+    st.markdown(f"## {title}")
     df = load_reports()
 
-        # إضافة: فلترة يومي/أسبوعي
-    period = st.radio("Report Period", ["Today", "Last 7 Days", "All"], horizontal=True)
+    # إضافة: فلترة يومي/أسبوعي
+    period_label = "Report Period" if lang == "English" else "الفترة الزمنية للتقرير"
+    period_options_en = ["Today", "Last 7 Days", "All"]
+    period_options_ar = ["اليوم", "آخر 7 أيام", "الكل"]
+    period_options = period_options_en if lang == "English" else period_options_ar
+    period_choice = st.radio(period_label, period_options, horizontal=True)
+    period = period_options_en[period_options.index(period_choice)]
 
     if period != "All":
         days = 1 if period == "Today" else 7
@@ -300,8 +369,9 @@ elif page == "📄 Report Generation":
     st.dataframe(df, use_container_width=True, hide_index=True)
  
     csv_data = df.to_csv(index=False).encode("utf-8")
+    download_label = "⬇️ Download Report (CSV)" if lang == "English" else "⬇️ تحميل التقرير (CSV)"
     st.download_button(
-        label="⬇️ Download Report (CSV)",
+        label=download_label,
         data=csv_data,
         file_name="ecovision_report.csv",
         mime="text/csv",
