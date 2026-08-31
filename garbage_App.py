@@ -179,17 +179,30 @@ if page == "🛣️ Street Detection":
                     st.success("✅ Clean street! No significant garbage detected.")
     
     elif source_type == "🎥 Live Camera":
-        st.info("Click **START** below to enable webcam detection.")
+        st.info("Click **START** below to enable real-time detection.")
         
-        # إعدادات WebRTC وتمرير نسبة الثقة (Confidence) للمعالج
-        rtc_config = RTCConfiguration({"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]})
+        rtc_config = RTCConfiguration({
+            "iceServers": [
+                {"urls": ["stun:stun.l.google.com:19302", "stun:stun1.l.google.com:19302"]},
+                {
+                    "urls": st.secrets["TURN_URL"],
+                    "username": st.secrets["TURN_USER"],
+                    "credential": st.secrets["TURN_PASS"]
+                }
+            ],
+            "iceTransportPolicy": "all"  # للسماح بجميع أنواع الاتصالات المتاحة
+        })
         
         ctx = webrtc_streamer(
             key="yolo-live-detection",
             video_processor_factory=YOLOVideoProcessor,
             rtc_configuration=rtc_config,
-            media_stream_constraints={"video": True, "audio": False}
+            media_stream_constraints={"video": True, "audio": False},
+            async_processing=True
         )
+
+        if ctx.video_processor:
+            ctx.video_processor.conf = confidence
 
 # REPORT DIRTY AREA 
 elif page == "🚨 Report a Dirty Area":
