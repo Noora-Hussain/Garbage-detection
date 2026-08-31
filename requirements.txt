@@ -8,3 +8,5 @@ streamlit-webrtc
 streamlit-geolocation
 folium
 streamlit-folium
+torch
+torchvision
