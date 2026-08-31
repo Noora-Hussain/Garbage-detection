@@ -179,29 +179,21 @@ if page == "🛣️ Street Detection":
                     st.success("✅ Clean street! No significant garbage detected.")
 
     elif source_type == "🎥 Live Camera":
-        st.info("التقط صورة مباشرة من كاميرا الجهاز للتحليل عبر الذكاء الاصطناعي")
-        camera_img = st.camera_input("Take a photo")
+        st.info("Click **START** below to enable webcam detection.")
+        
+        # إعدادات WebRTC وتمرير نسبة الثقة (Confidence) للمعالج
+        rtc_config = RTCConfiguration({"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]})
+        
+        ctx = webrtc_streamer(
+            key="yolo-live-detection",
+            video_processor_factory=YOLOVideoProcessor,
+            rtc_configuration=rtc_config,
+            media_stream_constraints={"video": True, "audio": False}
+        )
 
-        if camera_img is not None:
-            image = Image.open(camera_img).convert("RGB")
-            with st.spinner("AI is analyzing..."):
-                model = load_my_model()
-                res = model.predict(image, conf=confidence, verbose=False)[0]
+        if ctx.video_processor:
+            ctx.video_processor.conf = confidence
 
-                col1, col2 = st.columns(2)
-                with col1:
-                    st.image(image, caption="Original Frame", use_container_width=True)
-                with col2:
-                    st.image(res.plot(), caption="AI Detection Result", use_container_width=True, channels="BGR")
-
-                items = count_detected_objects(res)
-                if items:
-                    found_types = sorted(set(i["Garbage"] for i in items))
-                    st.warning(f"⚠️ Garbage found! Type(s): {', '.join(found_types)}")
-                    st.dataframe(pd.DataFrame(items), use_container_width=True, hide_index=True)
-                else:
-                    st.success("✅ Clean! No garbage detected.")
-                    
 # REPORT DIRTY AREA 
 elif page == "🚨 Report a Dirty Area":
     st.markdown("## 🚨 Report a Dirty Area with GPS Tagging")
