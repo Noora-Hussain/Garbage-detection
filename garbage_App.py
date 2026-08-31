@@ -7,6 +7,7 @@ from PIL import Image
 from ultralytics import YOLO
 from datetime import datetime
 import av
+import exifread
 from streamlit_webrtc import webrtc_streamer, VideoProcessorBase, RTCConfiguration
 
 st.set_page_config(page_title="EcoVision | Smart Waste Detection", page_icon="♻️", layout="wide", initial_sidebar_state="expanded")
@@ -83,6 +84,22 @@ def count_detected_objects(result):
         detections.append({"Garbage": result.names[class_id], "Confidence": f"{conf * 100:.1f}%"})
     return detections
 
+# يستخرج إحداثيات GPS من بيانات EXIF المخفية جوا الصورة (لو موجودة)
+def get_gps_from_image(img_file):
+    tags = exifread.process_file(img_file)
+    img_file.seek(0)  # نرجع الملف لبدايته عشان نقدر نفتحه كصورة بعدين
+
+    lat = tags.get("GPS GPSLatitude")
+    lon = tags.get("GPS GPSLongitude")
+
+    if not lat or not lon:
+        return None
+
+    lat_val = lat.values[0] + lat.values[1] / 60 + lat.values[2] / 3600
+    lon_val = lon.values[0] + lon.values[1] / 60 + lon.values[2] / 3600
+
+    return {"lat": float(lat_val), "lon": float(lon_val)}
+
 # لتحديد الموقع و تحديد مكان البلاغ بدقة Checkbox تعرض للمستخدم خيار ال
 def choose_area_menu(unique_key):
     st.markdown("📍 **Location & GPS Source**" if lang == "English" else "📍 **الموقع ومصدر GPS**")
@@ -93,13 +110,13 @@ def choose_area_menu(unique_key):
     
     # اذا المستخدم اختار تحديد الموقع نحطه و اذا م اختار نحط ليه قائمة المناطق يختار منها 
     if use_gps:
-        return "Manama (GPS)"
+        return {"name": "Manama (GPS)", "lat": coords["Manama"][0], "lon": coords["Manama"][1]}
     
     selected = st.selectbox(
         "Area:" if lang == "English" else "المنطقة:",
         ["Manama", "Muharraq", "Riffa", "Other"], key=unique_key
     )
-    return selected
+    return {"name": selected, "lat": coords[selected][0], "lon": coords[selected][1]}
 
 # CSV يخزن البلاغات عشان ما تختفي
 CSV_FILE = os.path.join(APP_FOLDER, "reports.csv")
@@ -225,11 +242,26 @@ elif page == "🚨 Report a Dirty Area":
     title = "🚨 Report a Dirty Area with GPS Tagging" if lang == "English" else "🚨 الإبلاغ عن منطقة متسخة مع تحديد الموقع"
     st.markdown(f"## {title}")
     
-    chosen_area = choose_area_menu("report_area")
     upload_label2 = "Upload Area Photo" if lang == "English" else "ارفعي صورة المنطقة"
     img_file = st.file_uploader(upload_label2, type=["jpg", "png", "jpeg"])
 
     if img_file is not None:
+        # نحاول نسحب GPS من بيانات الصورة (EXIF) أول شي
+        gps_data = get_gps_from_image(img_file)
+
+        if gps_data:
+            gps_msg = (f"📍 GPS found in photo: {gps_data['lat']:.4f}, {gps_data['lon']:.4f}"
+                       if lang == "English" else
+                       f"📍 تم العثور على GPS بالصورة: {gps_data['lat']:.4f}, {gps_data['lon']:.4f}")
+            st.success(gps_msg)
+            chosen_area = {"name": "Photo GPS", "lat": gps_data["lat"], "lon": gps_data["lon"]}
+        else:
+            no_gps_msg = ("No GPS data in photo — please select area manually."
+                          if lang == "English" else
+                          "لا توجد بيانات GPS بالصورة — الرجاء اختيار المنطقة يدويًا.")
+            st.info(no_gps_msg)
+            chosen_area = choose_area_menu("report_area")
+
         image = Image.open(img_file).convert("RGB")
 
         spinner2 = "Analyzing area & priority..." if lang == "English" else "جاري تحليل المنطقة وتحديد الأولوية..."
@@ -243,7 +275,7 @@ elif page == "🚨 Report a Dirty Area":
         none_txt = "None" if lang == "English" else "لا يوجد"
         found_names = ", ".join(set([i["Garbage"] for i in items])) if items else none_txt
         
-        #  حساب الاولوية بناء على عدد الاوساخ (نخليها إنجليزي داخليًا عشان باقي الكود يقارن عليها بدون مشاكل)
+        #  حساب الاولوية بناء على عدد الاوساخ
         priority = "🔴 High" if num_obj > 5 else ("🟠 Medium" if num_obj > 2 else "🟢 Low")
         priority_display = priority
         if lang == "العربية":
@@ -262,12 +294,12 @@ elif page == "🚨 Report a Dirty Area":
         with col2:
             st.markdown(f"### **{report_id}**")
             if lang == "English":
-                st.markdown(f"📍 **Location:** {chosen_area}")
+                st.markdown(f"📍 **Location:** {chosen_area['name']}")
                 st.markdown(f"🗑️ **Count:** {num_obj}")
                 st.markdown(f"🏷️ **Types:** {found_names}")
                 st.markdown(f"⚡ **Priority:** {priority_display}")
             else:
-                st.markdown(f"📍 **الموقع:** {chosen_area}")
+                st.markdown(f"📍 **الموقع:** {chosen_area['name']}")
                 st.markdown(f"🗑️ **العدد:** {num_obj}")
                 st.markdown(f"🏷️ **الأنواع:** {found_names}")
                 st.markdown(f"⚡ **الأولوية:** {priority_display}")
@@ -277,12 +309,14 @@ elif page == "🚨 Report a Dirty Area":
         if st.button(submit_label, type="primary"):
             new_rep = {
                 "ID": report_id, 
-                "Area": chosen_area, 
+                "Area": chosen_area["name"], 
                 "Objects": num_obj,
-                "Priority": priority,   # نخزن دايمًا بالإنجليزي بالملف عشان الفلاتر ما تنكسر
+                "Priority": priority, 
                 "Date": datetime.now().strftime("%d %b %Y"), 
                 "Status": "Pending Review",
-                "Details": found_names
+                "Details": found_names,
+                "lat": chosen_area["lat"],
+                "lon": chosen_area["lon"]
             }
             add_report(new_rep)
             success_msg = f"Report {report_id} successfully submitted and saved!" if lang == "English" else f"تم إرسال وحفظ البلاغ {report_id} بنجاح!"
@@ -317,15 +351,17 @@ elif page == "📊 Analytics Dashboard":
 
     st.markdown("---")
     
-    # إضافة إحداثيات المناطق تلقائياً
+# إضافة إحداثيات المناطق تلقائياً
     map_title = "### 🗺️ Live Reports Map" if lang == "English" else "### 🗺️ خريطة البلاغات المباشرة"
     st.markdown(map_title)
     if not df.empty:
-        df["lat"] = df["Area"].map(lambda x: coords.get(x, (26.2285, 50.5860))[0])
-        df["lon"] = df["Area"].map(lambda x: coords.get(x, (26.2285, 50.5860))[1])
+        # لو التقرير فيه lat/lon محفوظة (من GPS الحقيقي) نستخدمها، وإلا نرجع لـ coords القديمة
+        if "lat" not in df.columns or "lon" not in df.columns:
+            df["lat"] = df["Area"].map(lambda x: coords.get(x, (26.2285, 50.5860))[0])
+            df["lon"] = df["Area"].map(lambda x: coords.get(x, (26.2285, 50.5860))[1])
+
         df["size"] = df["Objects"] * 30
         st.map(df, latitude="lat", longitude="lon", size="size", zoom=10)
-
     
     # الرسم البياني 
     col_a, col_b = st.columns(2)
