@@ -1,6 +1,5 @@
 # Imports
 import os
-import cv2
 import numpy as np
 import pandas as pd
 import streamlit as st
@@ -139,88 +138,48 @@ with st.sidebar:
     st.markdown("---")
     confidence = st.slider("AI Confidence Threshold", 0.10, 0.90, 0.25, 0.05)
 
-# STREET DETECTION (LIVE OPENCV STREAM INCLUDED)
+# STREET DETECTION
 
 if page == "🛣️ Street Detection":
     st.markdown("## 🛣️ Street Garbage Detection")
     st.write("Analyze street footage in real-time with AI bounding boxes.")
 
-    # وجود زرين لرفع صورة أو تشغيل بث مباشر
-    source_type = st.radio("Source", ["📷 Image Upload", "🎥 Live Video Camera Stream"], horizontal=True)
+    # وجود زرين لرفع صورة أو فتح الكاميرا المدمجة مباشرة
+    source_type = st.radio("Source", ["📷 Image Upload", "📸 Camera Input"], horizontal=True)
 
+    img_file = None
     if source_type == "📷 Image Upload":
         img_file = st.file_uploader("Upload Image", type=["jpg", "png", "jpeg"])
-        if img_file is not None:
-            image = Image.open(img_file).convert("RGB")
-            with st.spinner("AI is analyzing..."):
-                model = load_my_model()
-                res = model.predict(image, conf=confidence, verbose=False)[0]
-                
-                # يقسم الشاشة لقسمين: عمود للصورة الأصلية وعمود للنتيجة بعد التحديد
-                col1, col2 = st.columns(2)
-                with col1:
-                    st.image(image, caption="Original Image", use_container_width=True)
-                with col2:
-                    st.image(res.plot(), caption="AI Detection Result", use_container_width=True)
-
-                items = count_detected_objects(res)
-                if items:
-                    found_types = sorted(set(i["Garbage"] for i in items))
-                    st.warning(f"⚠️ Garbage found! Type(s): {', '.join(found_types)}")
-                    st.dataframe(pd.DataFrame(items), use_container_width=True, hide_index=True)
-                else:
-                    st.success("✅ Clean street! No significant garbage detected.")
-                    
-            if items:
-                default_desc = "Recycle properly."
-                for i in items:
-                    name = i["Garbage"]
-                    desc_text = GARBAGE_DESCRIPTIONS.get(name, default_desc)
-                    st.info(f"**{name}**: {desc_text}")
-
     else:
-        # قسم البث الحي المباشر المعتمد على OpenCV
-        st.info("💡 اضغط على مربع الاختيار أدناه لتشغيل الكاميرا المباشرة ورسم المربعات لحظياً.")
-        run_stream = st.checkbox("🟢 تشغيل البث المباشر (Start Live Camera)")
-        
-        frame_placeholder = st.empty()
-        status_placeholder = st.empty()
+        img_file = st.camera_input("Take a photo to process AI detection")
 
-        if run_stream:
-            cap = cv2.VideoCapture(0)  # فتح كاميرا الجهاز المدمجة
+    if img_file is not None:
+        image = Image.open(img_file).convert("RGB")
+        with st.spinner("AI is analyzing..."):
             model = load_my_model()
+            res = model.predict(image, conf=confidence, verbose=False)[0]
+            
+            # يقسم الشاشة لقسمين: عمود للصورة الأصلية وعمود للنتيجة بعد التحديد
+            col1, col2 = st.columns(2)
+            with col1:
+                st.image(image, caption="Original Image", use_container_width=True)
+            with col2:
+                st.image(res.plot(), caption="AI Detection Result", use_container_width=True)
 
-            if not cap.isOpened():
-                st.error("❌ تعذر الفتح: يرجى التأكد من أن الكاميرا غيرة مستخدمة في تطبيق آخر.")
+            items = count_detected_objects(res)
+            if items:
+                found_types = sorted(set(i["Garbage"] for i in items))
+                st.warning(f"⚠️ Garbage found! Type(s): {', '.join(found_types)}")
+                st.dataframe(pd.DataFrame(items), use_container_width=True, hide_index=True)
             else:
-                while run_stream:
-                    ret, frame = cap.read()
-                    if not ret:
-                        st.error("فشل التقاط البث من الكاميرا.")
-                        break
-
-                    # تحويل نظام الألوان من BGR إلى RGB
-                    frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-
-                    # إرسال الإطار للنموذج ورسم المربعات
-                    results = model.predict(frame_rgb, conf=confidence, verbose=False)[0]
-                    annotated_frame = results.plot()
-
-                    # عرض البث الحي التفاعلي
-                    frame_placeholder.image(annotated_frame, caption="Live Camera Stream with Bounding Boxes", use_container_width=True)
-
-                    # إظهار حالة الاكتشاف تحت فيديو البث مباشرة
-                    items = count_detected_objects(results)
-                    if items:
-                        types_found = ", ".join(set(i["Garbage"] for i in items))
-                        status_placeholder.warning(f"⚠️ رصد مباشر: تم اكتشاف ({len(items)}) نفايات من نوع [{types_found}]")
-                    else:
-                        status_placeholder.success("✅ البث الحي: المنطقة نظيفة حالياً.")
-
-                # تحرير الكاميرا وتفريغ الواجهة عند إيقاف التشغيل
-                cap.release()
-                frame_placeholder.empty()
-                status_placeholder.empty()
+                st.success("✅ Clean street! No significant garbage detected.")
+                
+        if items:
+            default_desc = "Recycle properly."
+            for i in items:
+                name = i["Garbage"]
+                desc_text = GARBAGE_DESCRIPTIONS.get(name, default_desc)
+                st.info(f"**{name}**: {desc_text}")
 
 # REPORT DIRTY AREA 
 elif page == "🚨 Report a Dirty Area":
