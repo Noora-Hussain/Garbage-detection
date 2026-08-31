@@ -1,9 +1,10 @@
 streamlit
+numpy
+pandas
+pillow
 ultralytics
 opencv-python-headless
-pandas
-numpy
-Pillow
 streamlit-webrtc
-av
 streamlit-geolocation
+folium
+streamlit-folium
