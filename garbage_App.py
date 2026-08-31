@@ -13,6 +13,32 @@ from streamlit_webrtc import webrtc_streamer, VideoProcessorBase, RTCConfigurati
 import av
 import cv2
 
+# 1. أولاً: قم بتعريف الكلاس في مكان أعلى الكود
+class YOLOVideoProcessor(VideoProcessorBase):
+    def __init__(self):
+        self.model = load_my_model()
+        self.conf = 0.25
+
+    def recv(self, frame: av.VideoFrame) -> av.VideoFrame:
+        img = frame.to_ndarray(format="bgr24")
+        results = self.model.predict(img, conf=self.conf, verbose=False)
+        annotated_frame = results[0].plot()
+        return av.VideoFrame.from_ndarray(annotated_frame, format="bgr24")
+
+
+# 2. ثانياً: استدعه داخل قسم الكاميرا لاحقاً
+if source_type == "🎥 Live Camera":
+    rtc_config = RTCConfiguration({
+        "iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]
+    })
+    
+    ctx = webrtc_streamer(
+        key="yolo-live-detection",
+        video_processor_factory=YOLOVideoProcessor, # الآن يتعرف عليه بدون مشاكل
+        rtc_configuration=rtc_config,
+        media_stream_constraints={"video": True, "audio": False}
+    )
+            
 rtc_config = RTCConfiguration({
             "iceServers": [
                 {"urls": ["stun:stun.l.google.com:19302"]},
