@@ -180,7 +180,7 @@ if page == "🛣️ Street Detection":
 
     urls = ["turns:global.relay.metered.ca:80","turns:global.relay.metered.ca:80?transport=tcp","turns:global.relay.metered.ca:443","turns:global.relay.metered.ca:443?transport=tcp"]
     username ="bdec4905eb8eaaa33b8aa1e4"
-    credential ="euaq/TCzIAMInxyy
+    credential ="euaq/TCzIAMInxyy"
     
     elif source_type == "🎥 Live Camera":
         st.info("Click **START** below to enable webcam detection.")
