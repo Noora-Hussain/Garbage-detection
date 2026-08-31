@@ -8,6 +8,7 @@ from ultralytics import YOLO
 from datetime import datetime
 import av
 from streamlit_webrtc import webrtc_streamer, VideoProcessorBase, RTCConfiguration
+from streamlit_geolocation import streamlit_geolocation
 
 st.set_page_config(page_title="EcoVision | Smart Waste Detection", page_icon="♻️", layout="wide", initial_sidebar_state="expanded")
 
@@ -86,6 +87,15 @@ def count_detected_objects(result):
 # لتحديد الموقع و تحديد مكان البلاغ بدقة Checkbox تعرض للمستخدم خيار ال
 def choose_area_menu(unique_key):
     st.markdown("📍 **Location & GPS Source**" if lang == "English" else "📍 **الموقع ومصدر GPS**")
+
+    # زر يجيب الموقع الحقيقي من متصفح المستخدم
+    real_gps_label = "📡 Get My Real Location" if lang == "English" else "📡 احصل على موقعي الحقيقي"
+    st.write(real_gps_label)
+    location = streamlit_geolocation()
+
+    if location and location.get("latitude"):
+        return {"name": "Live GPS", "lat": location["latitude"], "lon": location["longitude"]}
+
     use_gps = st.checkbox(
         "Use Simulated GPS Coordinates" if lang == "English" else "استخدام إحداثيات GPS تجريبية",
         value=True, key=f"gps_{unique_key}"
