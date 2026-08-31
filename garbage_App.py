@@ -13,6 +13,22 @@ from streamlit_webrtc import webrtc_streamer, VideoProcessorBase, RTCConfigurati
 import av
 import cv2
 
+rtc_config = RTCConfiguration({
+            "iceServers": [
+                {"urls": ["stun:stun.l.google.com:19302"]},
+                {"urls": ["stun:stun1.l.google.com:19302"]},
+                {"urls": ["stun:stun2.l.google.com:19302"]}
+            ]
+        })
+        
+        ctx = webrtc_streamer(
+            key="yolo-live-detection",
+            video_processor_factory=YOLOVideoProcessor,
+            rtc_configuration=rtc_config,
+            media_stream_constraints={"video": True, "audio": False},
+            async_processing=True  # لمنع بطء واستجابة الفريمات
+        ) 
+
 st.set_page_config(page_title="EcoVision | Smart Waste Detection", page_icon="♻️", layout="wide", initial_sidebar_state="expanded")
 
 st.markdown("""
