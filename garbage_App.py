@@ -177,10 +177,6 @@ if page == "🛣️ Street Detection":
                         st.info(f"**{name}**: {desc_text}")
                 else:
                     st.success("✅ Clean street! No significant garbage detected.")
-
-    urls = ["turns:global.relay.metered.ca:80","turns:global.relay.metered.ca:80?transport=tcp","turns:global.relay.metered.ca:443","turns:global.relay.metered.ca:443?transport=tcp"]
-    username ="bdec4905eb8eaaa33b8aa1e4"
-    credential ="euaq/TCzIAMInxyy"
     
 elif source_type == "🎥 Live Camera":
     st.info("Click **START** below to enable webcam detection.")
@@ -194,6 +190,9 @@ elif source_type == "🎥 Live Camera":
         rtc_configuration=rtc_config,
         media_stream_constraints={"video": True, "audio": False}
         )
+    urls = ["turns:global.relay.metered.ca:80","turns:global.relay.metered.ca:80?transport=tcp","turns:global.relay.metered.ca:443","turns:global.relay.metered.ca:443?transport=tcp"]
+    username ="bdec4905eb8eaaa33b8aa1e4"
+    credential ="euaq/TCzIAMInxyy"
 
 # REPORT DIRTY AREA 
 elif page == "🚨 Report a Dirty Area":
