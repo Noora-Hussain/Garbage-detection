@@ -40,20 +40,6 @@ Per-class performance: Glass performed best (mAP = 0.7691), while Plastics lagge
 
 A confusion matrix (generated in the notebook) further shows where the model confuses one waste type for another.
 
-# The App (Streamlit)
-
-garbage_App.py : an interactive dashboard with four pages, navigable from the sidebar:
-
-Street Detection : Upload an image or stream live camera video; the model draws bounding boxes around detected garbage and lists the types found in real time.
-
-Report a Dirty Area : Upload a photo of a dirty area; the app auto-detects the user's location, runs detection on the image, calculates a priority level (🔴 High / 🟠 Medium / 🟢 Low) based on how much garbage is found, and lets the user submit a GPS-tagged report.
-
-Analytics Dashboard : A live map of all submitted reports, charts showing report distribution by area, a table of high-priority hotspots, and an admin panel to mark reports as resolved.
-
-Report Generation — Filter reports by period (Today / Last 7 Days / All) and export them as a CSV file.
-
-A confidence threshold slider in the sidebar lets the user control how strict the detector is across every page.
-
 # Limitations & Ethical Considerations
 
 Class imbalance: Metals and Plastics score lower (mAP = 0.47–0.48) than Glass and Paper (mAP = 0.75–0.77), likely due to fewer training examples and smaller/overlapping objects.
@@ -68,7 +54,7 @@ Fairness: report priority is based only on object count per photo, not broader e
 
 # Future Work
 
-Deploy the model on real collection trucks / edge devices, insha'allah.
+Deploy the model on real collection trucks edge devices, insha'allah.
 
 Improve inference speed for real-time video processing.
 
@@ -81,3 +67,4 @@ Fine-tune the model for small and overlapping objects.
 Expand the waste taxonomy beyond the current 5 categories.
 
 Add Arabic language support and further polish the dashboard UX.
+ 
