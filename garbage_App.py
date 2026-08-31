@@ -9,6 +9,8 @@ from datetime import datetime
 import av
 from streamlit_webrtc import webrtc_streamer, VideoProcessorBase, RTCConfiguration
 from streamlit_geolocation import streamlit_geolocation
+import folium
+from streamlit_folium import st_folium
 
 st.set_page_config(page_title="EcoVision | Smart Waste Detection", page_icon="♻️", layout="wide", initial_sidebar_state="expanded")
 
@@ -183,7 +185,7 @@ if page == "🛣️ Street Detection":
     if source_type == "📷 Image Upload":
         upload_label = "Upload Image" if lang == "English" else "ارفعي صورة"
         img_file = st.file_uploader(upload_label, type=["jpg", "png", "jpeg"])
-     
+      
     else:
         info_msg = "Allow camera access to start live detection." if lang == "English" else "اسمحي بالوصول للكاميرا لبدء الكشف المباشر."
         st.info(info_msg)
@@ -333,19 +335,24 @@ elif page == "📊 Analytics Dashboard":
     map_title = "### 🗺️ Live Reports Map" if lang == "English" else "### 🗺️ خريطة البلاغات المباشرة"
     st.markdown(map_title)
     if not df.empty:
-    # 1. تحويل الأعمدة إلى قيم رقمية وتنظيف القيم المفقودة
         df["lat"] = pd.to_numeric(df.get("lat"), errors="coerce")
         df["lon"] = pd.to_numeric(df.get("lon"), errors="coerce")
-
-    # 2. تعبئة أي إحداثيات مفقودة بناءً على اسم المنطقة (Area)
         df["lat"] = df["lat"].fillna(df["Area"].map(lambda x: coords.get(x, coords["Other"])[0]))
         df["lon"] = df["lon"].fillna(df["Area"].map(lambda x: coords.get(x, coords["Other"])[1]))
 
-    # 3. التأكد من تحويل الأحجام لقيم رقمية بدون أخطاء
-        df["size"] = pd.to_numeric(df["Objects"], errors="coerce").fillna(1) * 30
+        m = folium.Map(location=[26.2285, 50.5860], zoom_start=11)
 
-    # 4. رسم الخريطة بأمان
-        st.map(df, latitude="lat", longitude="lon", size="size", zoom=10)
+        for _, row in df.iterrows():
+            folium.CircleMarker(
+                location=[row["lat"], row["lon"]],
+                radius=min(max(float(row.get("Objects", 1)) * 3, 6), 20),
+                popup=f"<b>{row['ID']}</b><br>Area: {row['Area']}",
+                color="#e74c3c" if "High" in str(row.get("Priority", "")) else "#2ecc71",
+                fill=True,
+                fill_opacity=0.7
+            ).add_to(m)
+
+        st_folium(m, use_container_width=True, height=400)
     
     
     # الرسم البياني 
