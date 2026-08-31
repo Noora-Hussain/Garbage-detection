@@ -7,7 +7,7 @@ import folium
 from streamlit_folium import st_folium
 from streamlit_webrtc import webrtc_streamer
 
-from logic (1) import (
+from logic import (
     GARBAGE_DESCRIPTIONS,
     coords,
     RTC_CONFIGURATION,
