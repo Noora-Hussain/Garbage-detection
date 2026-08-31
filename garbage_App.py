@@ -10,8 +10,9 @@ import av
 from streamlit_webrtc import webrtc_streamer, VideoProcessorBase, RTCConfiguration
 
 st.set_page_config(page_title="EcoVision | Smart Waste Detection", page_icon="♻️", layout="wide", initial_sidebar_state="expanded")
+
 with st.sidebar:
-    lang = st.radio("🌐 Language / اللغة", ["English", "العربية"], horizontal=True)
+    lang = st.radio("🌐", ["English", "العربية"], horizontal=True)
     
 st.markdown("""
 <style>
