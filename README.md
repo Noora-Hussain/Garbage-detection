@@ -69,9 +69,15 @@ Fairness: report priority is based only on object count per photo, not broader e
 # Future Work
 
 Deploy the model on real collection trucks / edge devices, insha'allah.
+
 Improve inference speed for real-time video processing.
+
 Integrate live GPS-based route optimization for collection trucks.
+
 Collect more targeted data for underrepresented classes like Metals and Plastics.
+
 Fine-tune the model for small and overlapping objects.
+
 Expand the waste taxonomy beyond the current 5 categories.
+
 Add Arabic language support and further polish the dashboard UX.
