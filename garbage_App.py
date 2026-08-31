@@ -59,17 +59,29 @@ GARBAGE_DESCRIPTIONS_AR = {
 # إحداثيات المناطق للخريطة التفاعلية
 coords = {
     "Manama": (26.2285, 50.5860),
-    "Manama (GPS)": (26.2285, 50.5860),
     "Muharraq": (26.2572, 50.6119),
     "Riffa": (26.1300, 50.5550),
     "Other": (26.2000, 50.5800)
 } 
 
-# bestيبحث عن الملف و يحدد موقع ملف ال 
+# دالة لتحديد اسم أقرب منطقة من الإحداثيات الحقيقية
+def get_area_name_from_coords(lat, lon):
+    min_dist = float('inf')
+    closest_area = "Other"
+    for area, (a_lat, a_lon) in coords.items():
+        if area == "Other":
+            continue
+        dist = np.sqrt((lat - a_lat)**2 + (lon - a_lon)**2)
+        if dist < min_dist:
+            min_dist = dist
+            closest_area = area
+    return closest_area
+
+# best يبحث عن الملف ويحدد موقع ملف الـ
 APP_FOLDER = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATH = os.path.join(APP_FOLDER, "best.pt")
 
-# يحمل و يخزن ملف ال best عشان ما يتم اعادة تحميله في كل مرة 
+# يحمل ويخزن ملف الـ best عشان ما يتم اعادة تحميله في كل مرة 
 @st.cache_resource
 def load_my_model():
     return YOLO(MODEL_PATH)
@@ -86,7 +98,7 @@ def count_detected_objects(result):
         detections.append({"Garbage": result.names[class_id], "Confidence": f"{conf * 100:.1f}%"})
     return detections
 
-# لتحديد الموقع و تحديد مكان البلاغ بدقة Checkbox تعرض للمستخدم خيار ال
+# تحديد الموقع واختيار المنطقة
 def choose_area_menu(unique_key):
     st.markdown("📍 **Location & GPS Source**" if lang == "English" else "📍 **الموقع ومصدر GPS**")
 
@@ -96,16 +108,11 @@ def choose_area_menu(unique_key):
     location = streamlit_geolocation()
 
     if location and location.get("latitude"):
-        return {"name": "Live GPS", "lat": location["latitude"], "lon": location["longitude"]}
-
-    use_gps = st.checkbox(
-        "Use Simulated GPS Coordinates" if lang == "English" else "استخدام إحداثيات GPS تجريبية",
-        value=True, key=f"gps_{unique_key}"
-    )
-    
-    # اذا المستخدم اختار تحديد الموقع نحطه و اذا م اختار نحط ليه قائمة المناطق يختار منها 
-    if use_gps:
-        return {"name": "Manama (GPS)", "lat": coords["Manama"][0], "lon": coords["Manama"][1]}
+        lat = location["latitude"]
+        lon = location["longitude"]
+        area_name = get_area_name_from_coords(lat, lon)
+        st.success(f"📍 Location Captured: {area_name}" if lang == "English" else f"📍 تم تحديد المنطقة: {area_name}")
+        return {"name": area_name, "lat": lat, "lon": lon}
     
     selected = st.selectbox(
         "Area:" if lang == "English" else "المنطقة:",
@@ -354,7 +361,6 @@ elif page == "📊 Analytics Dashboard":
 
         st_folium(m, use_container_width=True, height=400)
     
-    
     # الرسم البياني 
     col_a, col_b = st.columns(2)
     with col_a:
@@ -383,7 +389,7 @@ elif page == "📄 Report Generation":
     st.markdown(f"## {title}")
     df = load_reports()
 
-    # إضافة: فلترة يومي/أسبوعي
+    # فلترة يومي/أسبوعي
     period_label = "Report Period" if lang == "English" else "الفترة الزمنية للتقرير"
     period_options_en = ["Today", "Last 7 Days", "All"]
     period_options_ar = ["اليوم", "آخر 7 أيام", "الكل"]
