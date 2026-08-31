@@ -7,7 +7,6 @@ from PIL import Image
 from ultralytics import YOLO
 from datetime import datetime
 import av
-import exifread
 from streamlit_webrtc import webrtc_streamer, VideoProcessorBase, RTCConfiguration
 
 st.set_page_config(page_title="EcoVision | Smart Waste Detection", page_icon="♻️", layout="wide", initial_sidebar_state="expanded")
@@ -83,22 +82,6 @@ def count_detected_objects(result):
         conf = float(box.conf[0])
         detections.append({"Garbage": result.names[class_id], "Confidence": f"{conf * 100:.1f}%"})
     return detections
-
-# يستخرج إحداثيات GPS من بيانات EXIF المخفية جوا الصورة (لو موجودة)
-def get_gps_from_image(img_file):
-    tags = exifread.process_file(img_file)
-    img_file.seek(0)  # نرجع الملف لبدايته عشان نقدر نفتحه كصورة بعدين
-
-    lat = tags.get("GPS GPSLatitude")
-    lon = tags.get("GPS GPSLongitude")
-
-    if not lat or not lon:
-        return None
-
-    lat_val = lat.values[0] + lat.values[1] / 60 + lat.values[2] / 3600
-    lon_val = lon.values[0] + lon.values[1] / 60 + lon.values[2] / 3600
-
-    return {"lat": float(lat_val), "lon": float(lon_val)}
 
 # لتحديد الموقع و تحديد مكان البلاغ بدقة Checkbox تعرض للمستخدم خيار ال
 def choose_area_menu(unique_key):
@@ -242,26 +225,11 @@ elif page == "🚨 Report a Dirty Area":
     title = "🚨 Report a Dirty Area with GPS Tagging" if lang == "English" else "🚨 الإبلاغ عن منطقة متسخة مع تحديد الموقع"
     st.markdown(f"## {title}")
     
+    chosen_area = choose_area_menu("report_area")
     upload_label2 = "Upload Area Photo" if lang == "English" else "ارفعي صورة المنطقة"
     img_file = st.file_uploader(upload_label2, type=["jpg", "png", "jpeg"])
 
     if img_file is not None:
-        # نحاول نسحب GPS من بيانات الصورة (EXIF) أول شي
-        gps_data = get_gps_from_image(img_file)
-
-        if gps_data:
-            gps_msg = (f"📍 GPS found in photo: {gps_data['lat']:.4f}, {gps_data['lon']:.4f}"
-                       if lang == "English" else
-                       f"📍 تم العثور على GPS بالصورة: {gps_data['lat']:.4f}, {gps_data['lon']:.4f}")
-            st.success(gps_msg)
-            chosen_area = {"name": "Photo GPS", "lat": gps_data["lat"], "lon": gps_data["lon"]}
-        else:
-            no_gps_msg = ("No GPS data in photo — please select area manually."
-                          if lang == "English" else
-                          "لا توجد بيانات GPS بالصورة — الرجاء اختيار المنطقة يدويًا.")
-            st.info(no_gps_msg)
-            chosen_area = choose_area_menu("report_area")
-
         image = Image.open(img_file).convert("RGB")
 
         spinner2 = "Analyzing area & priority..." if lang == "English" else "جاري تحليل المنطقة وتحديد الأولوية..."
@@ -355,7 +323,7 @@ elif page == "📊 Analytics Dashboard":
     map_title = "### 🗺️ Live Reports Map" if lang == "English" else "### 🗺️ خريطة البلاغات المباشرة"
     st.markdown(map_title)
     if not df.empty:
-        # لو التقرير فيه lat/lon محفوظة (من GPS الحقيقي) نستخدمها، وإلا نرجع لـ coords القديمة
+        # لو التقرير فيه lat/lon محفوظة نستخدمها، وإلا نرجع لـ coords القديمة
         if "lat" not in df.columns or "lon" not in df.columns:
             df["lat"] = df["Area"].map(lambda x: coords.get(x, (26.2285, 50.5860))[0])
             df["lon"] = df["Area"].map(lambda x: coords.get(x, (26.2285, 50.5860))[1])
