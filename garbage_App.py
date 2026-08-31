@@ -11,7 +11,27 @@ import folium
 from streamlit_folium import st_folium
 from streamlit_webrtc import webrtc_streamer, VideoProcessorBase, RTCConfiguration
 import av
- 
+
+from streamlit_webrtc import RTCConfiguration, webrtc_streamer
+
+# إضافة خوادم STUN مجانية من Google
+RTC_CONFIGURATION = RTCConfiguration(
+    {
+        "iceServers": [
+            {"urls": ["stun:stun.l.google.com:19302"]},
+            {"urls": ["stun:stun1.l.google.com:19302"]},
+        ]
+    }
+)
+
+# تمرير الإعدادات داخل الدالة
+webrtc_streamer(
+    key="camera-feed",
+    rtc_configuration=RTC_CONFIGURATION,
+    # باقي إعداداتك...
+)
+
+
 st.set_page_config(page_title="EcoVision | Smart Waste Detection", page_icon="♻️", layout="wide", initial_sidebar_state="expanded")
  
 st.markdown("""
