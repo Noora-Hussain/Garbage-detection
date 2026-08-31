@@ -9,6 +9,9 @@ from datetime import datetime
 from streamlit_geolocation import streamlit_geolocation
 import folium
 from streamlit_folium import st_folium
+from streamlit_webrtc import webrtc_streamer, VideoProcessorBase, RTCConfiguration
+import av
+import cv2
 
 st.set_page_config(page_title="EcoVision | Smart Waste Detection", page_icon="♻️", layout="wide", initial_sidebar_state="expanded")
 
@@ -61,6 +64,21 @@ MODEL_PATH = os.path.join(APP_FOLDER, "best.pt")
 @st.cache_resource
 def load_my_model():
     return YOLO(MODEL_PATH)
+
+# كلاس معالجة الفيديو للكاميرا المباشرة
+class YOLOVideoProcessor(VideoProcessorBase):
+    def __init__(self):
+        self.model = load_my_model()
+        self.conf = 0.25
+
+    def recv(self, frame: av.VideoFrame) -> av.VideoFrame:
+        img = frame.to_ndarray(format="bgr24")
+        
+        # الكشف ورسم المربعات عبر YOLO
+        results = self.model.predict(img, conf=self.conf, verbose=False)
+        annotated_frame = results[0].plot()
+
+        return av.VideoFrame.from_ndarray(annotated_frame, format="bgr24")
 
 # يستخرج فئات القمامة المكتشفة و درجات الثقة من نتائج النموذج
 def count_detected_objects(result):
@@ -129,33 +147,52 @@ if page == "🛣️ Street Detection":
     st.markdown("## 🛣️ Street Garbage Detection")
     st.write("Analyze street footage in real-time with AI bounding boxes.")
 
-    img_file = st.file_uploader("Upload Image", type=["jpg", "png", "jpeg"])
+    source_type = st.radio("Source", ["📷 Image Upload", "🎥 Live Camera"], horizontal=True)
 
-    if img_file is not None:
-        image = Image.open(img_file).convert("RGB")
-        with st.spinner("AI is analyzing..."):
-            model = load_my_model()
-            res = model.predict(image, conf=confidence, verbose=False)[0]
+    if source_type == "📷 Image Upload":
+        img_file = st.file_uploader("Upload Image", type=["jpg", "png", "jpeg"])
 
-            col1, col2 = st.columns(2)
-            with col1:
-                st.image(image, caption="Original Image", use_container_width=True)
-            with col2:
-                st.image(res.plot(), caption="AI Detection Result", use_container_width=True, channels="BGR")
+        if img_file is not None:
+            image = Image.open(img_file).convert("RGB")
+            with st.spinner("AI is analyzing..."):
+                model = load_my_model()
+                res = model.predict(image, conf=confidence, verbose=False)[0]
 
-            items = count_detected_objects(res)
-            if items:
-                found_types = sorted(set(i["Garbage"] for i in items))
-                st.warning(f"⚠️ Garbage found! Type(s): {', '.join(found_types)}")
-                st.dataframe(pd.DataFrame(items), use_container_width=True, hide_index=True)
-                
-                default_desc = "Recycle properly."
-                for i in items:
-                    name = i["Garbage"]
-                    desc_text = GARBAGE_DESCRIPTIONS.get(name, default_desc)
-                    st.info(f"**{name}**: {desc_text}")
-            else:
-                st.success("✅ Clean street! No significant garbage detected.")
+                col1, col2 = st.columns(2)
+                with col1:
+                    st.image(image, caption="Original Image", use_container_width=True)
+                with col2:
+                    st.image(res.plot(), caption="AI Detection Result", use_container_width=True, channels="BGR")
+
+                items = count_detected_objects(res)
+                if items:
+                    found_types = sorted(set(i["Garbage"] for i in items))
+                    st.warning(f"⚠️ Garbage found! Type(s): {', '.join(found_types)}")
+                    st.dataframe(pd.DataFrame(items), use_container_width=True, hide_index=True)
+                    
+                    default_desc = "Recycle properly."
+                    for i in items:
+                        name = i["Garbage"]
+                        desc_text = GARBAGE_DESCRIPTIONS.get(name, default_desc)
+                        st.info(f"**{name}**: {desc_text}")
+                else:
+                    st.success("✅ Clean street! No significant garbage detected.")
+
+    elif source_type == "🎥 Live Camera":
+        st.info("Click **START** below to enable webcam detection.")
+        
+        # إعدادات WebRTC وتمرير نسبة الثقة (Confidence) للمعالج
+        rtc_config = RTCConfiguration({"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]})
+        
+        ctx = webrtc_streamer(
+            key="yolo-live-detection",
+            video_processor_factory=YOLOVideoProcessor,
+            rtc_configuration=rtc_config,
+            media_stream_constraints={"video": True, "audio": False}
+        )
+
+        if ctx.video_processor:
+            ctx.video_processor.conf = confidence
 
 # REPORT DIRTY AREA 
 elif page == "🚨 Report a Dirty Area":
