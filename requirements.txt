@@ -4,5 +4,5 @@ opencv-python-headless
 ultralytics
 streamlit-folium
 streamlit-geolocation
-streamlit-webrtc
+streamlit-webrtc>=0.47.0
 av
