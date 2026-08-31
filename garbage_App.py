@@ -175,8 +175,6 @@ if page == "🛣️ Street Detection":
     source_type = st.radio("Source", ["📷 Image Upload", "🎥 Live Camera"], horizontal=True)
  
     if source_type == "🎥 Live Camera":
-        st.info("📡 اضغط START وسمح للمتصفح بالوصول للكاميرا عشان يبدأ الكشف اللحظي")
- 
         # webrtc_streamer يفتح اتصال مباشر بين المتصفح والسيرفر ويمرر كل فريم لـ YOLOProcessor
         ctx = webrtc_streamer(
             key="live-detection",
