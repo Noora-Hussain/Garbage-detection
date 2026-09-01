@@ -58,7 +58,7 @@ def get_area_name_from_coords(lat, lon):
 
 # يبحث عن الملف ويحدد موقع ملف الـ best
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-MODEL_PATH = os.path.join(BASE_DIR, "data", "best.pt")
+MODEL_PATH = os.path.join(BASE_DIR, "models", "best.pt")
 
 # يحمل ويخزن ملف الـ best عشان ما يتم اعادة تحميله في كل مرة 
 @st.cache_resource
