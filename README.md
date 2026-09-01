@@ -72,7 +72,7 @@ Add Arabic language support and further polish the dashboard UX.
 https://app.roboflow.com/noora-hussain-s-workspace/ecovision-quw28/3 
 
 # App Link 
-https://garbage-detection-mkjddfjwfp3q436jug6u8h.streamlit.app/
+https://garbage-detection-wssdfrayddrsrlzfri3pvo.streamlit.app/
 
 # Video Link
 https://youtu.be/XVChoDiu47Q
