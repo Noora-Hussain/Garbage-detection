@@ -57,8 +57,8 @@ def get_area_name_from_coords(lat, lon):
     return closest_area
 
 # يبحث عن الملف ويحدد موقع ملف الـ best
-APP_FOLDER = os.path.dirname(os.path.abspath(__file__))
-MODEL_PATH = os.path.join(APP_FOLDER, "data", "best.pt")
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+MODEL_PATH = os.path.join(BASE_DIR, "data", "best.pt")
 
 # يحمل ويخزن ملف الـ best عشان ما يتم اعادة تحميله في كل مرة 
 @st.cache_resource
