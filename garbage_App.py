@@ -69,7 +69,7 @@ def load_my_model():
 class YOLOVideoProcessor(VideoProcessorBase):
     def __init__(self):
         self.model = load_my_model()
-        self.conf = 0.25
+        self.conf = 0.15
 
     def recv(self, frame: av.VideoFrame) -> av.VideoFrame:
         img = frame.to_ndarray(format="bgr24")
