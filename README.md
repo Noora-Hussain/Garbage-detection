@@ -75,5 +75,5 @@ https://app.roboflow.com/noora-hussain-s-workspace/ecovision-quw28/3
 https://garbage-detection-mkjddfjwfp3q436jug6u8h.streamlit.app/
 
 # Video Link
-
+https://youtu.be/XVChoDiu47Q
  
