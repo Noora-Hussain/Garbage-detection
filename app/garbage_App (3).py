@@ -1,24 +1,17 @@
 # Imports
+import os
+import numpy as np
 import pandas as pd
 import streamlit as st
 from PIL import Image
+from ultralytics import YOLO
 from datetime import datetime
+from streamlit_geolocation import streamlit_geolocation
 import folium
 from streamlit_folium import st_folium
-from streamlit_webrtc import webrtc_streamer
-
-from logic import (
-    GARBAGE_DESCRIPTIONS,
-    coords,
-    RTC_CONFIGURATION,
-    load_my_model,
-    count_detected_objects,
-    get_user_location,
-    load_reports,
-    add_report,
-    update_report_status,
-    YOLOProcessor,
-)
+from streamlit_webrtc import webrtc_streamer, VideoProcessorBase, RTCConfiguration
+import av
+import cv2
 
 st.set_page_config(page_title="EcoVision | Smart Waste Detection", page_icon="♻️", layout="wide", initial_sidebar_state="expanded")
 
@@ -27,9 +20,116 @@ st.markdown("""
     .stApp { background-color: #F4F7F5; }
     [data-testid="stSidebar"] { background-color: #18352B; }
     [data-testid="stSidebar"] * { color: white; }
+    .section-title { color: #18352B; font-size: 28px; font-weight: 700; margin-top: 15px; margin-bottom: 15px; }
     div.stButton > button { border-radius: 12px; border: 1px solid #2F6B4F; font-weight: 600; }
+    .footer { text-align: center; color: #718078; margin-top: 45px; padding: 20px; }
 </style>
 """, unsafe_allow_html=True)
+
+# Dictionary 
+GARBAGE_DESCRIPTIONS = {
+    "Glass": "Place in the designated glass recycling container.",
+    "Metal": "Place in the metal recycling bin.",
+    "Paper": "Place in the designated paper recycling bin.",
+    "Plastic": "Place in the plastic recycling bin.",
+    "General Waste": "Place in the general waste bin for non-recyclable items.",
+}
+
+# إحداثيات المناطق للخريطة التفاعلية
+coords = {
+    "Manama": (26.2285, 50.5860),
+    "Muharraq": (26.2572, 50.6119),
+    "Riffa": (26.1300, 50.5550),
+    "Other": (26.2000, 50.5800)
+} 
+
+# دالة لتحديد اسم أقرب منطقة من الإحداثيات الحقيقية
+def get_area_name_from_coords(lat, lon):
+    min_dist = float('inf')
+    closest_area = "Other"
+    for area, (a_lat, a_lon) in coords.items():
+        if area == "Other":
+            continue
+        dist = np.sqrt((lat - a_lat)**2 + (lon - a_lon)**2)
+        if dist < min_dist:
+            min_dist = dist
+            closest_area = area
+    return closest_area
+
+# يبحث عن الملف ويحدد موقع ملف الـ best
+APP_FOLDER = os.path.dirname(os.path.abspath(__file__))
+MODEL_PATH = os.path.join(APP_FOLDER, "best.pt")
+
+# يحمل ويخزن ملف الـ best عشان ما يتم اعادة تحميله في كل مرة 
+@st.cache_resource
+def load_my_model():
+    return YOLO(MODEL_PATH)
+
+# كلاس معالجة الفيديو للكاميرا المباشرة
+class YOLOVideoProcessor(VideoProcessorBase):
+    def __init__(self):
+        self.model = load_my_model()
+        self.conf = 0.15
+
+    def recv(self, frame: av.VideoFrame) -> av.VideoFrame:
+        img = frame.to_ndarray(format="bgr24")
+        
+        # الكشف ورسم المربعات عبر YOLO
+        results = self.model.predict(img, conf=self.conf, verbose=False)
+        annotated_frame = results[0].plot()
+
+        return av.VideoFrame.from_ndarray(annotated_frame, format="bgr24")
+
+# يستخرج فئات القمامة المكتشفة و درجات الثقة من نتائج النموذج
+def count_detected_objects(result):
+    if result.boxes is None:
+        return []
+    
+    detections = []
+    for box in result.boxes:
+        class_id = int(box.cls[0])
+        conf = float(box.conf[0])
+        detections.append({"Garbage": result.names[class_id], "Confidence": f"{conf * 100:.1f}%"})
+    return detections
+
+# تحديد الموقع تلقائياً عبر GPS
+def get_user_location():
+    st.markdown("📍 **GPS Location Auto-Detection**")    
+    location = streamlit_geolocation()
+
+    if location and location.get("latitude") is not None and location.get("longitude") is not None:
+        lat = location["latitude"]
+        lon = location["longitude"]
+        area_name = get_area_name_from_coords(lat, lon)
+        st.success(f"📍 Location Captured: {area_name}")
+        return {"name": area_name, "lat": lat, "lon": lon}
+    else:
+        return {"name": "Other", "lat": coords["Other"][0], "lon": coords["Other"][1]}
+
+# يخزن البلاغات في ملف CSV عشان ما تختفي
+CSV_FILE = os.path.join(APP_FOLDER, "reports.csv")
+
+def load_reports():
+    if os.path.exists(CSV_FILE):
+        return pd.read_csv(CSV_FILE)
+    else:
+        initial_data = pd.DataFrame([
+            {"ID": "Report #1001", "Area": "Manama", "Objects": 4, "Priority": "🟠 Medium", "Date": "20 Aug 2026", "Status": "Resolved", "Details": "Plastic, Metal", "lat": 26.2285, "lon": 50.5860},
+            {"ID": "Report #1002", "Area": "Muharraq", "Objects": 6, "Priority": "🔴 High", "Date": "21 Aug 2026", "Status": "Pending Review", "Details": "General Waste, Plastic", "lat": 26.2572, "lon": 50.6119}
+        ])
+        initial_data.to_csv(CSV_FILE, index=False)
+        return initial_data
+
+# دالة تحدد موقع البلاغ و تحفظه في الملف بشكل دائم 
+def add_report(new_report_dict):
+    df = load_reports()
+    updated_df = pd.concat([df, pd.DataFrame([new_report_dict])], ignore_index=True)
+    updated_df.to_csv(CSV_FILE, index=False)
+
+def update_report_status(report_id, new_status):
+    df = load_reports()
+    df.loc[df["ID"] == report_id, "Status"] = new_status
+    df.to_csv(CSV_FILE, index=False)
 
 with st.sidebar:
     st.markdown("## ♻️ EcoVision")
@@ -43,28 +143,13 @@ with st.sidebar:
     confidence = st.slider("AI Confidence Threshold", 0.10, 0.90, 0.25, 0.05)
 
 # STREET DETECTION
-
 if page == "🛣️ Street Detection":
     st.markdown("## 🛣️ Street Garbage Detection")
     st.write("Analyze street footage in real-time with AI bounding boxes.")
 
-    # خيارين بس الحين: رفع صورة، أو كاميرا لايف مباشرة (بدل صورة واحدة من الكاميرا)
     source_type = st.radio("Source", ["📷 Image Upload", "🎥 Live Camera"], horizontal=True)
 
-    if source_type == "🎥 Live Camera":
-        # webrtc_streamer يفتح اتصال مباشر بين المتصفح والسيرفر ويمرر كل فريم لـ YOLOProcessor
-        ctx = webrtc_streamer(
-            key="live-detection",
-            video_processor_factory=YOLOProcessor,
-            rtc_configuration=RTC_CONFIGURATION,
-            media_stream_constraints={"video": True, "audio": False},
-        )
-
-        # تحديث قيمة الثقة (confidence) بالمعالج كل مرة يتغير فيها السلايدر
-        if ctx.video_processor:
-            ctx.video_processor.confidence = confidence
-
-    else:  # 📷 Image Upload
+    if source_type == "📷 Image Upload":
         img_file = st.file_uploader("Upload Image", type=["jpg", "png", "jpeg"])
 
         if img_file is not None:
@@ -73,12 +158,10 @@ if page == "🛣️ Street Detection":
                 model = load_my_model()
                 res = model.predict(image, conf=confidence, verbose=False)[0]
 
-                # يقسم الشاشة لقسمين: عمود للصورة الأصلية وعمود للنتيجة بعد التحديد
                 col1, col2 = st.columns(2)
                 with col1:
                     st.image(image, caption="Original Image", use_container_width=True)
                 with col2:
-                    # channels="BGR" عشان الألوان تطلع صحيحة (res.plot ترجع BGR)
                     st.image(res.plot(), caption="AI Detection Result", use_container_width=True, channels="BGR")
 
                 items = count_detected_objects(res)
@@ -86,15 +169,40 @@ if page == "🛣️ Street Detection":
                     found_types = sorted(set(i["Garbage"] for i in items))
                     st.warning(f"⚠️ Garbage found! Type(s): {', '.join(found_types)}")
                     st.dataframe(pd.DataFrame(items), use_container_width=True, hide_index=True)
+                    
+                    default_desc = "Recycle properly."
+                    for i in items:
+                        name = i["Garbage"]
+                        desc_text = GARBAGE_DESCRIPTIONS.get(name, default_desc)
+                        st.info(f"**{name}**: {desc_text}")
                 else:
                     st.success("✅ Clean street! No significant garbage detected.")
+    
+    elif source_type == "🎥 Live Camera":
+        st.info("Click **START** below to enable real-time detection.")
+        
+        rtc_config = RTCConfiguration({
+            "iceServers": [
+                {"urls": ["stun:stun.l.google.com:19302", "stun:stun1.l.google.com:19302"]},
+                {
+                    "urls": st.secrets["TURN_URL"],
+                    "username": st.secrets["TURN_USER"],
+                    "credential": st.secrets["TURN_PASS"]
+                }
+            ],
+            "iceTransportPolicy": "all"  # للسماح بجميع أنواع الاتصالات المتاحة
+        })
+        
+        ctx = webrtc_streamer(
+            key="yolo-live-detection",
+            video_processor_factory=YOLOVideoProcessor,
+            rtc_configuration=rtc_config,
+            media_stream_constraints={"video": True, "audio": False},
+            async_processing=True
+        )
 
-            if items:
-                default_desc = "Recycle properly."
-                for i in items:
-                    name = i["Garbage"]
-                    desc_text = GARBAGE_DESCRIPTIONS.get(name, default_desc)
-                    st.info(f"**{name}**: {desc_text}")
+        if ctx.video_processor:
+            ctx.video_processor.conf = confidence
 
 # REPORT DIRTY AREA 
 elif page == "🚨 Report a Dirty Area":
@@ -110,18 +218,13 @@ elif page == "🚨 Report a Dirty Area":
             model = load_my_model()
             res = model.predict(image, conf=confidence, verbose=False)[0]
 
-        # يحسب عدد قطع النفايات اللي لقاها الموديل في الصورة
         items = count_detected_objects(res)
         num_obj = len(items)
         found_names = ", ".join(set([i["Garbage"] for i in items])) if items else "None"
         
-        # حساب الأولوية بناءً على عدد الأوساخ
         priority = "🔴 High" if num_obj > 5 else ("🟠 Medium" if num_obj > 2 else "🟢 Low")
-        
-        # تحديد رقم البلاغ
         report_id = f"Report #{1001 + len(load_reports())}"
 
-        # عرض تفاصيل البلاغ كاملة
         st.markdown("---")
         col1, col2 = st.columns(2)
         with col1:
@@ -133,7 +236,6 @@ elif page == "🚨 Report a Dirty Area":
             st.markdown(f"🏷️ **Types:** {found_names}")
             st.markdown(f"⚡ **Priority:** {priority}")
 
-        # حفظ البلاغ في الملف عند ضغط الزر
         if st.button("🚀 Submit Report", type="primary"):
             new_rep = {
                 "ID": report_id, 
@@ -150,7 +252,6 @@ elif page == "🚨 Report a Dirty Area":
             st.success(f"Report {report_id} successfully submitted and saved!")
 
 # ANALYTICS DASHBOARD 
-
 elif page == "📊 Analytics Dashboard":
     st.markdown("## 📊 Analytics Dashboard & High-Density Insights")
 
@@ -231,7 +332,7 @@ elif page == "📄 Report Generation":
         df = df[df["ParsedDate"] >= cutoff].drop(columns=["ParsedDate"])
 
     st.dataframe(df, use_container_width=True, hide_index=True)
- 
+
     csv_data = df.to_csv(index=False).encode("utf-8")
     st.download_button(
         label="⬇️ Download Report (CSV)",
