@@ -67,4 +67,13 @@ Fine-tune the model for small and overlapping objects.
 Expand the waste taxonomy beyond the current 5 categories.
 
 Add Arabic language support and further polish the dashboard UX.
+
+# Data Link
+https://app.roboflow.com/noora-hussain-s-workspace/ecovision-quw28/3 
+
+# App Link 
+https://garbage-detection-mkjddfjwfp3q436jug6u8h.streamlit.app/
+
+# Video Link
+
  
