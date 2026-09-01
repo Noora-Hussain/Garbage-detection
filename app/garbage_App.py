@@ -107,6 +107,7 @@ def get_user_location():
         return {"name": "Other", "lat": coords["Other"][0], "lon": coords["Other"][1]}
 
 # يخزن البلاغات في ملف CSV عشان ما تختفي
+APP_FOLDER = os.path.dirname(os.path.abspath(__file__))
 CSV_FILE = os.path.join(APP_FOLDER, "data" ,"reports.csv")
 
 def load_reports():
