@@ -108,26 +108,38 @@ def get_user_location():
 
 # يخزن البلاغات في ملف CSV عشان ما تختفي
 APP_FOLDER = os.path.dirname(os.path.abspath(__file__))
-CSV_FILE = os.path.join(APP_FOLDER, "data" ,"reports.csv")
+DATA_FOLDER = os.path.join(APP_FOLDER, "data")
+CSV_FILE = os.path.join(DATA_FOLDER, "reports.csv")
+
+# دالة مساعدة لضمان وجود المجلد قبل إجراء أي عملية حفظ
+def ensure_data_folder_exists():
+    if not os.path.exists(DATA_FOLDER):
+        os.makedirs(DATA_FOLDER, exist_ok=True)
 
 def load_reports():
+    ensure_data_folder_exists()
     if os.path.exists(CSV_FILE):
-        return pd.read_csv(CSV_FILE)
-    else:
-        initial_data = pd.DataFrame([
-            {"ID": "Report #1001", "Area": "Manama", "Objects": 4, "Priority": "🟠 Medium", "Date": "20 Aug 2026", "Status": "Resolved", "Details": "Plastic, Metal", "lat": 26.2285, "lon": 50.5860},
-            {"ID": "Report #1002", "Area": "Muharraq", "Objects": 6, "Priority": "🔴 High", "Date": "21 Aug 2026", "Status": "Pending Review", "Details": "General Waste, Plastic", "lat": 26.2572, "lon": 50.6119}
-        ])
-        initial_data.to_csv(CSV_FILE, index=False)
-        return initial_data
+        try:
+            return pd.read_csv(CSV_FILE)
+        except Exception:
+            pass # في حال حدوث أي تلف أو خطأ في قراءة الملف
+            
+    initial_data = pd.DataFrame([
+        {"ID": "Report #1001", "Area": "Manama", "Objects": 4, "Priority": "🟠 Medium", "Date": "20 Aug 2026", "Status": "Resolved", "Details": "Plastic, Metal", "lat": 26.2285, "lon": 50.5860},
+        {"ID": "Report #1002", "Area": "Muharraq", "Objects": 6, "Priority": "🔴 High", "Date": "21 Aug 2026", "Status": "Pending Review", "Details": "General Waste, Plastic", "lat": 26.2572, "lon": 50.6119}
+    ])
+    initial_data.to_csv(CSV_FILE, index=False)
+    return initial_data
 
 # دالة تحدد موقع البلاغ و تحفظه في الملف بشكل دائم 
 def add_report(new_report_dict):
+    ensure_data_folder_exists()
     df = load_reports()
     updated_df = pd.concat([df, pd.DataFrame([new_report_dict])], ignore_index=True)
     updated_df.to_csv(CSV_FILE, index=False)
 
 def update_report_status(report_id, new_status):
+    ensure_data_folder_exists()
     df = load_reports()
     df.loc[df["ID"] == report_id, "Status"] = new_status
     df.to_csv(CSV_FILE, index=False)
@@ -159,25 +171,25 @@ if page == "🛣️ Street Detection":
                 model = load_my_model()
                 res = model.predict(image, conf=confidence, verbose=False)[0]
 
-                col1, col2 = st.columns(2)
-                with col1:
-                    st.image(image, caption="Original Image", use_container_width=True)
-                with col2:
-                    st.image(res.plot(), caption="AI Detection Result", use_container_width=True, channels="BGR")
+            col1, col2 = st.columns(2)
+            with col1:
+                st.image(image, caption="Original Image", use_container_width=True)
+            with col2:
+                st.image(res.plot(), caption="AI Detection Result", use_container_width=True, channels="BGR")
 
-                items = count_detected_objects(res)
-                if items:
-                    found_types = sorted(set(i["Garbage"] for i in items))
-                    st.warning(f"⚠️ Garbage found! Type(s): {', '.join(found_types)}")
-                    st.dataframe(pd.DataFrame(items), use_container_width=True, hide_index=True)
-                    
-                    default_desc = "Recycle properly."
-                    for i in items:
-                        name = i["Garbage"]
-                        desc_text = GARBAGE_DESCRIPTIONS.get(name, default_desc)
-                        st.info(f"**{name}**: {desc_text}")
-                else:
-                    st.success("✅ Clean street! No significant garbage detected.")
+            items = count_detected_objects(res)
+            if items:
+                found_types = sorted(set(i["Garbage"] for i in items))
+                st.warning(f"⚠️ Garbage found! Type(s): {', '.join(found_types)}")
+                st.dataframe(pd.DataFrame(items), use_container_width=True, hide_index=True)
+                
+                default_desc = "Recycle properly."
+                for i in items:
+                    name = i["Garbage"]
+                    desc_text = GARBAGE_DESCRIPTIONS.get(name, default_desc)
+                    st.info(f"**{name}**: {desc_text}")
+            else:
+                st.success("✅ Clean street! No significant garbage detected.")
     
     elif source_type == "🎥 Live Camera":
         st.info("Click **START** below to enable real-time detection.")
